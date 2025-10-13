@@ -1,0 +1,2239 @@
+{
+    "schemes": [],
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a docuement for ocm api",
+        "title": "Ocm API document",
+        "contact": {},
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "ocm.alo123.net",
+    "basePath": "/api",
+    "paths": {
+        "/admin/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "API đăng nhập tài khoản",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Dữ liệu đăng ký tài khoản người dùng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserAuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "API lấy thông tin cá nhân",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "API đăng ký tài khoản",
+                "parameters": [
+                    {
+                        "description": "Dữ liệu đăng ký tài khoản người dùng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserAuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/collections": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Danh mục"
+                ],
+                "summary": "API lấy danh sách danh mục",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Dữ liệu lấy danh sách danh mục",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.GetListCollectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.GetListCollectionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Danh mục"
+                ],
+                "summary": "API tạo mới danh mục",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Dữ liệu tạo danh mục",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateCollectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Collection"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/collections/product-types/{collection_id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Danh mục"
+                ],
+                "summary": "API lấy danh sách loại sản phẩm trong danh mục",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID của bộ sưu tập",
+                        "name": "collection_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.CollectionProductTypeDetail"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/collections/{alias}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Danh mục"
+                ],
+                "summary": "API lấy chi tiết danh mục theo alias",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "alias của bộ sưu tập",
+                        "name": "alias",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.CollectionDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/file/upload": {
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "File"
+                ],
+                "summary": "API upload file",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "file"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Danh sách file cần upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Danh sách URL cần upload",
+                        "name": "url",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "categoring file",
+                        "name": "category",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "upload success!",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Attachment"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/locations": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chi nhánh"
+                ],
+                "summary": "API lấy danh sách chi nhánh",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Location"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/products": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sản phẩm"
+                ],
+                "summary": "API lấy danh sách sản phẩm",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Từ khóa tìm kiếm theo tên, mã sản phẩm, mô tả",
+                        "name": "key",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Danh sách nhà cung cấp, cách nhau bởi dấu phẩy",
+                        "name": "vendors",
+                        "in": "path"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Danh sách loại sản phẩm, cách nhau bởi dấu phẩy",
+                        "name": "product_types",
+                        "in": "path"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Danh sách tag, cách nhau bởi dấu phẩy",
+                        "name": "tags",
+                        "in": "path"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Danh sách hình thức sản phẩm (normal, digital), cách nhau bởi dấu phẩy",
+                        "name": "types",
+                        "in": "path"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Danh sách trạng thái sản phẩm (active, inactive), cách nhau bởi dấu phẩy",
+                        "name": "statuses",
+                        "in": "path"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Danh sách id collection, cách nhau bởi dấu phẩy",
+                        "name": "collection_ids",
+                        "in": "path"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Số trang, bắt đầu từ 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Số bản ghi trên trang",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"created_at\"",
+                        "description": "Trường sắp xếp (created_at, name, price)",
+                        "name": "sort_field",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"desc\"",
+                        "description": "Kiểu sắp xếp (asc, desc)",
+                        "name": "sort_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Giá tối đa",
+                        "name": "max_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Giá tối thiểu",
+                        "name": "min_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Thời gian tạo theo timestamp (s)",
+                        "name": "min_created_at",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Thời gian tạo đến theo timestamp (s)",
+                        "name": "max_created_at",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.GetListProductsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sản phẩm"
+                ],
+                "summary": "API tạo sản phẩm",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Dữ liệu tạo sản phẩm",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Product"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/products/product_types/list": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sản phẩm"
+                ],
+                "summary": "API lấy danh sách loại sản phẩm",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/products/tags/list": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sản phẩm"
+                ],
+                "summary": "API lấy danh sách tag theo loại",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/products/vendors/list": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sản phẩm"
+                ],
+                "summary": "API lấy danh sách nhà cung cấp",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/products/{alias}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sản phẩm"
+                ],
+                "summary": "API lấy chi tiết sản phẩm theo alias",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Alias sản phẩm",
+                        "name": "alias",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ProductDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/variants": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Phiên bản của sản phẩm"
+                ],
+                "summary": "API lấy danh sách phiên bản của sản phẩm",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "Từ khóa tìm kiếm theo mã SKU, mã vạch, tên sản phẩm",
+                        "name": "key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Số trang, bắt đầu từ 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Số bản ghi trên trang",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.GetListVariantResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/old-region/list": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Region"
+                ],
+                "summary": "Lấy danh sách khu vực cũ theo mã khu vực cha và loại khu vực",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Loại khu vực",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mã khu vực cha",
+                        "name": "parent_code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lấy danh sách thành công",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.OldRegion"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/region/convert": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Region"
+                ],
+                "summary": "Chuyển đổi khu vực cũ sang khu vực mới",
+                "parameters": [
+                    {
+                        "description": "Dữ liệu khu vực cũ",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ConvertRegionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Region"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/region/list": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Region"
+                ],
+                "summary": "Lấy danh sách khu vực theo mã khu vực cha và loại khu vực",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Loại khu vực, Tỉnh = 2, Huyện = 3, Xã = 4",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mã khu vực cha là mã quốc gia (VN) nếu lấy tỉnh, mã tỉnh nếu lấy huyện, mã huyện nếu lấy xã",
+                        "name": "parent_code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lấy danh sách thành công",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Region"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Attachment": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "file_size": {
+                    "type": "integer"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mime_type": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.AttachmentStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AttachmentStatus": {
+            "type": "integer",
+            "enum": [
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "Draft",
+                "InUsed"
+            ]
+        },
+        "models.Category": {
+            "type": "string",
+            "enum": [
+                "product",
+                "user",
+                "collection"
+            ],
+            "x-enum-varnames": [
+                "ProductCategory",
+                "UserCategory",
+                "CollectionCategory"
+            ]
+        },
+        "models.Collection": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "disjunctive": {
+                    "description": "điều kiện and hoặc or khi kết hợp nhiều luật",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "meta_description": {
+                    "type": "string"
+                },
+                "meta_title": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sort_order": {
+                    "type": "string"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.CollectionType"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CollectionDetail": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "attachments": {
+                    "$ref": "#/definitions/models.DetailAttachment"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "disjunctive": {
+                    "description": "điều kiện and hoặc or khi kết hợp nhiều luật",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "meta_description": {
+                    "type": "string"
+                },
+                "meta_title": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Rule"
+                    }
+                },
+                "sort_order": {
+                    "type": "string"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.CollectionType"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CollectionProductTypeDetail": {
+            "type": "object",
+            "properties": {
+                "collection_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "product_type_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.CollectionType": {
+            "type": "string",
+            "enum": [
+                "smart",
+                "manual"
+            ],
+            "x-enum-varnames": [
+                "CSmart",
+                "CManual"
+            ]
+        },
+        "models.ConvertRegionRequest": {
+            "type": "object",
+            "properties": {
+                "old_district_name": {
+                    "type": "string"
+                },
+                "old_province_name": {
+                    "type": "string"
+                },
+                "old_ward_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateAttributeReq": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.CreateCollectionRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "disjunctive": {
+                    "type": "boolean"
+                },
+                "image": {
+                    "$ref": "#/definitions/models.Attachment"
+                },
+                "meta_description": {
+                    "type": "string"
+                },
+                "meta_title": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CreateRuleRequest"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/models.CollectionType"
+                }
+            }
+        },
+        "models.CreateProductRequest": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CreateAttributeReq"
+                    }
+                },
+                "collections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Collection"
+                    }
+                },
+                "content": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DetailAttachment"
+                    }
+                },
+                "meta_description": {
+                    "type": "string"
+                },
+                "meta_title": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "product_type": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.ProductStatus"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/models.PType"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "variants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CreateVariantRequest"
+                    }
+                },
+                "vendor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateRuleRequest": {
+            "type": "object",
+            "properties": {
+                "column": {
+                    "$ref": "#/definitions/models.RuleColumn"
+                },
+                "condition": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "relation": {
+                    "$ref": "#/definitions/models.RuleRelation"
+                }
+            }
+        },
+        "models.CreateVariantRequest": {
+            "type": "object",
+            "properties": {
+                "barcode": {
+                    "type": "string"
+                },
+                "compare_at_price": {
+                    "type": "number"
+                },
+                "cost_price": {
+                    "type": "number"
+                },
+                "image_id": {
+                    "type": "integer"
+                },
+                "inventory_quantities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.InventoryQuantityRequest"
+                    }
+                },
+                "lot_management": {
+                    "type": "boolean"
+                },
+                "option1": {
+                    "type": "string"
+                },
+                "option2": {
+                    "type": "string"
+                },
+                "option3": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "product_type": {
+                    "$ref": "#/definitions/models.PType"
+                },
+                "requires_shipping": {
+                    "type": "boolean"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "tracked": {
+                    "type": "boolean"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number"
+                },
+                "weight_unit": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DetailAttachment": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "file_size": {
+                    "type": "integer"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mime_type": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.AttachmentStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetListCollectionRequest": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.CollectionType"
+                }
+            }
+        },
+        "models.GetListCollectionResponse": {
+            "type": "object",
+            "properties": {
+                "collections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CollectionDetail"
+                    }
+                },
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.GetListProductsResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ProductDetail"
+                    }
+                }
+            }
+        },
+        "models.GetListVariantResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "variants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VariantDetail"
+                    }
+                }
+            }
+        },
+        "models.InventoryQuantityRequest": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "integer"
+                },
+                "location_id": {
+                    "type": "integer"
+                },
+                "on_hand": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Location": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "default_location": {
+                    "type": "boolean"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "fulfill_order": {
+                    "description": "thiết lập chi nhánh làm địa chỉ lấy hàng",
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "inventory_management": {
+                    "description": "chi nhánh quản lý tồn kho",
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.LocationStatus"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LocationStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "inactive"
+            ],
+            "x-enum-varnames": [
+                "LActive",
+                "LInactive"
+            ]
+        },
+        "models.LoginMethod": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "x-enum-varnames": [
+                "Email",
+                "Phone",
+                "Google",
+                "Facebook"
+            ]
+        },
+        "models.OldRegion": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_code": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.RegionType"
+                }
+            }
+        },
+        "models.PType": {
+            "type": "string",
+            "enum": [
+                "normal",
+                "combo",
+                "packsize"
+            ],
+            "x-enum-comments": {
+                "PPacksize": "san pham co don vi quy doi"
+            },
+            "x-enum-descriptions": [
+                "",
+                "",
+                "san pham co don vi quy doi"
+            ],
+            "x-enum-varnames": [
+                "PNormal",
+                "PCombo",
+                "PPacksize"
+            ]
+        },
+        "models.Product": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "meta_description": {
+                    "description": "phuc vu seo",
+                    "type": "string"
+                },
+                "meta_title": {
+                    "description": "phuc vu seo",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "published_on": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.ProductStatus"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.PType"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProductAttachmentDetail": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "file_size": {
+                    "type": "integer"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mime_type": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.AttachmentStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProductAttributeDetail": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.ProductDetail": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ProductAttributeDetail"
+                    }
+                },
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ProductAttachmentDetail"
+                    }
+                },
+                "meta_description": {
+                    "description": "phuc vu seo",
+                    "type": "string"
+                },
+                "meta_title": {
+                    "description": "phuc vu seo",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "product_type": {
+                    "type": "string"
+                },
+                "published_on": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.ProductStatus"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/models.PType"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "variants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VariantDetail"
+                    }
+                },
+                "vendor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProductStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "inactive"
+            ],
+            "x-enum-varnames": [
+                "PActtive",
+                "PInactivr"
+            ]
+        },
+        "models.Region": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_code": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.RegionType"
+                }
+            }
+        },
+        "models.RegionType": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "x-enum-varnames": [
+                "RCountry",
+                "RProvince",
+                "RDistrict",
+                "RWard"
+            ]
+        },
+        "models.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.Rule": {
+            "type": "object",
+            "properties": {
+                "collection_id": {
+                    "type": "integer"
+                },
+                "column": {
+                    "$ref": "#/definitions/models.RuleColumn"
+                },
+                "condition": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "relation": {
+                    "$ref": "#/definitions/models.RuleRelation"
+                }
+            }
+        },
+        "models.RuleColumn": {
+            "type": "string",
+            "enum": [
+                "price",
+                "name"
+            ],
+            "x-enum-varnames": [
+                "RCPrice",
+                "RCName"
+            ]
+        },
+        "models.RuleRelation": {
+            "type": "string",
+            "enum": [
+                "equal",
+                "not_equal",
+                "greater",
+                "less",
+                "contains",
+                "starts_with",
+                "ends_with"
+            ],
+            "x-enum-varnames": [
+                "REqual",
+                "RNotEqual",
+                "RGreater",
+                "RLess",
+                "RContains",
+                "RStartsWith",
+                "REndsWith"
+            ]
+        },
+        "models.UserAuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_owner": {
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "login_method": {
+                    "$ref": "#/definitions/models.LoginMethod"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "verified_email": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.UserRegisterRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "province_code": {
+                    "type": "string"
+                },
+                "store_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_owner": {
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "login_method": {
+                    "$ref": "#/definitions/models.LoginMethod"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "verified_email": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.VariantDetail": {
+            "type": "object",
+            "properties": {
+                "barcode": {
+                    "type": "string"
+                },
+                "compare_at_price": {
+                    "type": "number"
+                },
+                "cost_price": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image": {
+                    "$ref": "#/definitions/models.DetailAttachment"
+                },
+                "image_id": {
+                    "type": "integer"
+                },
+                "inventory_quantity": {
+                    "type": "integer"
+                },
+                "lot_management": {
+                    "type": "boolean"
+                },
+                "option1": {
+                    "type": "string"
+                },
+                "option2": {
+                    "type": "string"
+                },
+                "option3": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "product_id": {
+                    "type": "integer"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "requires_shipping": {
+                    "type": "boolean"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "sold": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "tracked": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.PType"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "number"
+                },
+                "weight_unit": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
