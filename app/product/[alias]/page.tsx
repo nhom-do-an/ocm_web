@@ -7,5 +7,6 @@ interface ProductDetailPageProps {
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  return <ProductDetailView />;
+  const { alias } = await params;
+  return <ProductDetailView alias={alias} />;
 }

@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { addToCart } from '@/redux/slices/cartSlice';
 import { fetchProduct } from '@/redux/slices/productsSlice';
-import { ProductDetail } from '@/types';
 import { getProductPrice, getProductComparePrice, getProductImageUrl, getProductStock } from '@/utils/product';
 
-export default function ProductDetailView() {
-  const params = useParams();
+interface CollectionViewProps {
+  alias: string;
+}
+
+export default function ProductDetailView({ alias }: CollectionViewProps) {
   const dispatch = useAppDispatch();
   const { currentProduct, loading } = useAppSelector((state) => state.products);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
@@ -20,10 +22,10 @@ export default function ProductDetailView() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
-    if (params.id) {
-      dispatch(fetchProduct(params.id as string));
+    if (alias) {
+      dispatch(fetchProduct(alias));
     }
-  }, [dispatch, params.id]);
+  }, [dispatch, alias]);
 
   const handleAddToCart = () => {
     if (currentProduct) {
@@ -209,7 +211,7 @@ export default function ProductDetailView() {
             <Card className="mt-4">
               <CardContent className="p-4">
                 <h3 className="font-bold mb-2">Tóm tắt</h3>
-                <p className="text-gray-700">{currentProduct.summary}</p>
+                <p dangerouslySetInnerHTML={{ __html: currentProduct.summary }} className="text-gray-700"></p>
               </CardContent>
             </Card>
           )}

@@ -22,7 +22,10 @@ export const NAVIGATION = {
     {
       name: 'Sản phẩm',
       href: '/products',
-      // children sẽ được load dynamic từ API
+    },
+    {
+      name: 'Tất cả sản phẩm',
+      href: '/collection',
     },
     {
       name: 'Khuyến mãi',
@@ -33,8 +36,8 @@ export const NAVIGATION = {
       href: '/about',
     },
     {
-      name: 'Liên hệ',
-      href: '/contact',
+      name: 'Hệ thống cửa hàng',
+      href: '/stores',
     },
   ],
   footer: {

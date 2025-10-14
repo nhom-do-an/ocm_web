@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
-import { Filter, Grid, List, SortAsc } from 'lucide-react';
+import { Filter, Grid, Home, List, SortAsc } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -121,7 +121,8 @@ export default function CollectionView({ alias }: CollectionViewProps) {
       <nav className="mb-6 text-sm">
         <ol className="flex items-center space-x-2">
           <li>
-            <a href="/" className="text-gray-500 hover:text-gray-700">
+            <a href="/" className="text-gray-900 hover:text-red-500 flex items-center gap-1">
+              <Home className="h-4 w-4 text-red-500" />
               Trang chủ
             </a>
           </li>
@@ -129,7 +130,7 @@ export default function CollectionView({ alias }: CollectionViewProps) {
             <span className="text-gray-400">/</span>
           </li>
           <li>
-            <span className="text-gray-900">{collection.name}</span>
+            <span className="text-gray-500">{collection.name}</span>
           </li>
         </ol>
       </nav>
@@ -222,21 +223,6 @@ export default function CollectionView({ alias }: CollectionViewProps) {
                   <label className="flex items-center">
                     <input type="checkbox" className="mr-2" />
                     <span className="text-sm">Lock&Lock</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Rating */}
-              <div>
-                <h4 className="mb-2 text-sm font-medium">Đánh giá</h4>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" />
-                    <span className="text-sm">5 sao</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" />
-                    <span className="text-sm">4 sao trở lên</span>
                   </label>
                 </div>
               </div>

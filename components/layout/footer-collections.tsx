@@ -14,7 +14,7 @@ export function FooterCollections() {
       try {
         const response = await collectionsService.getCollections({ 
           page: 1, 
-          limit: 6 // Chỉ lấy 6 collection cho footer
+          size: 6 // Chỉ lấy 6 collection cho footer
         });
         
         if (response.success) {

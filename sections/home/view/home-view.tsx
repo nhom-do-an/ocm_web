@@ -14,6 +14,7 @@ import { ProductDetail } from '@/types/product';
 import { CollectionDetail } from '@/types/collection';
 import { collectionsService } from '@/services/api';
 import { getProductPrice, getProductComparePrice, getProductImageUrl, getProductStock } from '@/utils/product';
+import { ProductCard } from '@/components/product/product-card';
 
 export default function HomeView() {
   const dispatch = useAppDispatch();
@@ -23,7 +24,7 @@ export default function HomeView() {
   const [collectionsLoading, setCollectionsLoading] = useState(true);
 
   useEffect(() => {
-    dispatch(fetchProducts({ limit: 12 }));
+    dispatch(fetchProducts({ limit: 12, sort_field: 'created_at', sort_type: 'asc' }));
     fetchCollections();
   }, [dispatch]);
 
@@ -81,53 +82,9 @@ export default function HomeView() {
             <h2 className="text-2xl font-bold text-center">SẢN PHẨM BÁN CHẠY</h2>
           </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => {
-            const price = getProductPrice(product);
-            const comparePrice = getProductComparePrice(product);
-            const imageUrl = getProductImageUrl(product);
-            const stock = getProductStock(product);
-            const isInStock = stock > 0;
-            const discountPercentage = comparePrice && price ? Math.round(((comparePrice - price) / comparePrice) * 100) : null;
-
-            return (
-              <Card key={product.id} className="group cursor-pointer">
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                    <img
-                      src={imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                  </div>
-
-                  <h3 className="font-medium text-sm mb-2 line-clamp-2">{product.name}</h3>
-
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-red-600 font-bold">{price.toLocaleString()}đ</span>
-                    {comparePrice && comparePrice > price && (
-                      <span className="text-gray-400 line-through text-sm">
-                        {comparePrice.toLocaleString()}đ
-                      </span>
-                    )}
-                    {discountPercentage && (
-                      <Badge variant="destructive" className="text-xs">
-                        -{discountPercentage}%
-                      </Badge>
-                    )}
-                  </div>
-
-                  <Button 
-                    size="sm" 
-                    className="w-full" 
-                    onClick={() => handleAddToCart(product)}
-                    disabled={!isInStock}
-                  >
-                    {isInStock ? 'Thêm vào giỏ' : 'Hết hàng'}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {featuredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
         </section>
 

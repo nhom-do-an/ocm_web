@@ -68,14 +68,14 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
           <div className="text-sm text-gray-400">
-            © 2024 {SITE_CONFIG.name}. Tất cả quyền được bảo lưu.
+            © 2025 {SITE_CONFIG.name}. Tất cả quyền được bảo lưu.
           </div>
-          <div className="flex space-x-6">
+          {/* <div className="flex space-x-6">
             <img src="/images/payment/visa.png" alt="Visa" className="h-6" />
             <img src="/images/payment/mastercard.png" alt="Mastercard" className="h-6" />
             <img src="/images/payment/momo.png" alt="Momo" className="h-6" />
             <img src="/images/payment/zalopay.png" alt="ZaloPay" className="h-6" />
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>

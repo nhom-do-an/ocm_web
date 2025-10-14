@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, ShoppingCart, Menu, Phone, User, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -24,9 +24,24 @@ import DynamicNavigation from '@/components/navigation/dynamic-navigation';
 export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
   const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+  // Close mobile menus when screen size changes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        setIsMobileMenuOpen(false);
+        setIsMobileNavOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleCartToggle = () => {
     dispatch(toggleCart());
@@ -80,41 +95,6 @@ export function Header() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex">
-            <NavigationMenu>
-              <NavigationMenuList>
-                {NAVIGATION.main.map((item) => (
-                  <NavigationMenuItem key={item.name}>
-                    {item.name === 'Sản phẩm' ? (
-                      <>
-                        <NavigationMenuTrigger>{item.name}</NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                          <div className="w-[400px] p-4 md:w-[500px] lg:w-[600px]">
-                            <DynamicNavigation 
-                              className="grid gap-3 md:grid-cols-2" 
-                              limit={8}
-                            />
-                          </div>
-                        </NavigationMenuContent>
-                      </>
-                    ) : (
-                      <NavigationMenuLink asChild>
-                        <Link
-                          href={item.href}
-                          className={cn(
-                            'group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50'
-                          )}
-                        >
-                          {item.name}
-                        </Link>
-                      </NavigationMenuLink>
-                    )}
-                  </NavigationMenuItem>
-                ))}
-              </NavigationMenuList>
-            </NavigationMenu>
-          </div>
 
           {/* Search and Actions */}
           <div className="flex items-center gap-4">
@@ -162,13 +142,16 @@ export function Header() {
             </Button>
 
             {/* Mobile menu */}
-            <Sheet>
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="sm" className="lg:hidden">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-80">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                </SheetHeader>
                 <div className="mt-6 flow-root">
                   <div className="-my-6 divide-y divide-gray-500/10">
                     <div className="space-y-2 py-6">
@@ -177,6 +160,7 @@ export function Header() {
                           <Link
                             href={item.href}
                             className="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                            onClick={() => setIsMobileMenuOpen(false)}
                           >
                             {item.name}
                           </Link>
@@ -186,11 +170,7 @@ export function Header() {
                                 className="space-y-1" 
                                 limit={6}
                                 variant="mobile"
-                                onItemClick={() => {
-                                  // Close mobile menu when item is clicked
-                                  const closeBtn = document.querySelector('[data-state="open"]') as HTMLElement;
-                                  closeBtn?.click();
-                                }}
+                                onItemClick={() => setIsMobileMenuOpen(false)}
                               />
                             </div>
                           )}
@@ -227,22 +207,18 @@ export function Header() {
       <div className="bg-red-600 text-white">
         <div className="container mx-auto px-4">
           <div className="flex items-center h-12">
-            <div className="hidden lg:flex items-center space-x-8">
-              <Button 
-                variant="ghost" 
-                className="text-white hover:bg-red-700 font-medium"
-              >
-                <Menu className="h-4 w-4 mr-2" />
-                Tất cả sản phẩm
-              </Button>
-              
+            <div className="hidden lg:flex items-center space-x-8">          
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="text-white hover:bg-red-700 data-[state=open]:bg-red-700">
-                      Sản phẩm
+                    <NavigationMenuTrigger 
+                    onClick={(e) => e.preventDefault()}
+                    className="!text-white !bg-transparent hover:!bg-red-700 hover:!text-white data-[state=open]:!bg-red-700 data-[state=open]:!text-white focus:!text-white border-none"
+                    >
+                      <Menu className="h-4 w-4 mr-2" />
+                      Tất cả sản phẩm
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent>
+                    <NavigationMenuContent className="bg-white">
                       <div className="w-[600px] p-4">
                         <DynamicNavigation 
                           className="grid gap-3 grid-cols-3" 
@@ -252,12 +228,12 @@ export function Header() {
                     </NavigationMenuContent>
                   </NavigationMenuItem>
 
-                  {NAVIGATION.main.filter(item => item.name !== 'Sản phẩm').map((item) => (
+                  {NAVIGATION.main.filter(item => item.name !== 'Sản phẩm' && item.name !== 'Trang chủ' && item.name !== 'Tất cả sản phẩm').map((item) => (
                     <NavigationMenuItem key={item.name}>
                       <NavigationMenuLink asChild>
                         <Link
                           href={item.href}
-                          className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                          className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium !text-white hover:!bg-red-700 hover:!text-white focus:!text-white transition-colors"
                         >
                           {item.name}
                         </Link>
@@ -270,7 +246,7 @@ export function Header() {
 
             {/* Mobile menu for red nav */}
             <div className="lg:hidden w-full">
-              <Sheet>
+              <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="text-white hover:bg-red-700">
                     <Menu className="h-5 w-5 mr-2" />
@@ -278,26 +254,27 @@ export function Header() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-80">
+                  <SheetHeader>
+                    <SheetTitle>Tất cả sản phẩm</SheetTitle>
+                  </SheetHeader>
                   <div className="mt-6 flow-root">
                     <div className="space-y-2 py-6">
-                      {NAVIGATION.main.map((item) => (
+                      {NAVIGATION.main.filter(item => item.name !== 'Sản phẩm').map((item) => (
                         <div key={item.name}>
                           <Link
                             href={item.href}
                             className="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                            onClick={() => setIsMobileNavOpen(false)}
                           >
                             {item.name}
                           </Link>
-                          {item.name === 'Sản phẩm' && (
+                          {item.name === 'Tất cả sản phẩm' && (
                             <div className="ml-4 space-y-1">
                               <DynamicNavigation 
                                 className="space-y-1" 
                                 limit={6}
                                 variant="mobile"
-                                onItemClick={() => {
-                                  const closeBtn = document.querySelector('[data-state="open"]') as HTMLElement;
-                                  closeBtn?.click();
-                                }}
+                                onItemClick={() => setIsMobileNavOpen(false)}
                               />
                             </div>
                           )}

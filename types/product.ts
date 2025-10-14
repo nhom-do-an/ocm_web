@@ -181,7 +181,6 @@ export interface ProductSearchParams {
   limit?: number;
   sort_field?: string;
   sort_type?: string;
-  sort_by?: string; // Backward compatibility
   max_price?: number;
   min_price?: number;
   min_created_at?: number;

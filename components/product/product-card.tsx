@@ -41,7 +41,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg">
-      <Link href={`/product/${product.id}`}>
+      <Link href={`/product/${product.alias}`} className="block">
         <div className="relative">
           {/* Product Image */}
           <div className="relative aspect-square overflow-hidden">
@@ -73,7 +73,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {/* Add to Cart Overlay */}
             <div className="absolute inset-x-0 bottom-0 translate-y-full transition-transform duration-300 group-hover:translate-y-0">
               <Button
-                className="w-full rounded-none"
+                className="w-full rounded-none cursor-pointer"
                 onClick={handleAddToCart}
                 disabled={!isInStock}
               >
@@ -99,13 +99,6 @@ export function ProductCard({ product }: ProductCardProps) {
                   </span>
                 )}
               </div>
-
-              {/* Product Summary */}
-              {product.summary && (
-                <div className="text-xs text-gray-600">
-                  <span className="line-clamp-1">{product.summary}</span>
-                </div>
-              )}
 
               {/* Stock Status */}
               <div className="flex items-center justify-between">

@@ -18,7 +18,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 export default function ProductsView() {
   const dispatch = useAppDispatch();
-  const { products, loading, filters, totalPages, totalProducts } = useAppSelector(
+  const { products, loading, filters, totalPages } = useAppSelector(
     (state) => state.products
   );
   const [localSearchQuery, setLocalSearchQuery] = useState('');
@@ -54,9 +54,9 @@ export default function ProductsView() {
     );
   };
 
-  const handleSortChange = (sortBy: string) => {
-    dispatch(setFilters({ sort_by: sortBy }));
-    dispatch(fetchProducts({ sort_by: sortBy }));
+  const handleSortChange = (sort_field: string | undefined, sort_type: string | undefined) => {
+    dispatch(setFilters({ sort_field, sort_type, page: 1 }));
+    dispatch(fetchProducts({ sort_field, sort_type }));
   };
 
   if (loading) {
@@ -89,8 +89,8 @@ export default function ProductsView() {
 
           <div className="flex gap-2">
             <select
-              value={filters.sort_by || 'created_at'}
-              onChange={(e) => handleSortChange(e.target.value)}
+              value={filters.sort_field || 'created_at'}
+              onChange={(e) => handleSortChange(e.target.value, filters.sort_type)}
               className="px-3 py-2 border border-gray-300 rounded-md"
             >
               <option value="created_at">Mới nhất</option>
