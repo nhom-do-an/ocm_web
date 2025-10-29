@@ -3,7 +3,12 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import Autoplay from 'embla-carousel-autoplay';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from '@/components/ui/carousel';
 
 const banners = [
   {
@@ -19,47 +24,37 @@ const banners = [
 ];
 
 export function BannerSlider() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [emblaApi, setEmblaApi] = useState<any>(undefined);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
-        prevIndex === banners.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 5000);
+    if (!emblaApi) return;
+    const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
+    onSelect();
+    emblaApi.on('select', onSelect);
+    return () => emblaApi.off('select', onSelect);
+  }, [emblaApi]);
 
-    return () => clearInterval(interval);
-  }, []);
-
-  const goToPrevious = () => {
-    setCurrentIndex(currentIndex === 0 ? banners.length - 1 : currentIndex - 1);
-  };
-
-  const goToNext = () => {
-    setCurrentIndex(currentIndex === banners.length - 1 ? 0 : currentIndex + 1);
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
+  const goToPrevious = () => emblaApi?.scrollPrev();
+  const goToNext = () => emblaApi?.scrollNext();
+  const goToSlide = (index: number) => emblaApi?.scrollTo(index);
 
   return (
     <div className="relative w-full h-full overflow-hidden rounded-lg">
-      {/* Images */}
-      <div 
-        className="flex transition-transform duration-500 ease-in-out h-full"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      <Carousel
+        opts={{ loop: true }}
+        plugins={[Autoplay({ delay: 3000})]}
+        setApi={setEmblaApi}
+        className="h-full"
       >
-        {banners.map((banner) => (
-          <div key={banner.id} className="w-full h-full flex-shrink-0">
-            <img
-              src={banner.image}
-              alt={banner.alt}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
+        <CarouselContent className="h-full">
+          {banners.map((banner) => (
+            <CarouselItem key={banner.id} className="w-full h-full flex-shrink-0">
+              <img src={banner.image} alt={banner.alt} className="w-full h-full object-cover" />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
 
       {/* Navigation Arrows */}
       <Button
@@ -86,7 +81,7 @@ export function BannerSlider() {
           <button
             key={index}
             className={`w-3 h-3 rounded-full transition-colors ${
-              index === currentIndex ? 'bg-white' : 'bg-white/50'
+              index === selectedIndex ? 'bg-white' : 'bg-white/50'
             }`}
             onClick={() => goToSlide(index)}
           />

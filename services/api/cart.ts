@@ -13,7 +13,7 @@ export const cartService = {
   addToCart: async (data: {
     productId: string;
     quantity: number;
-    selectedVariants?: Record<string, string>;
+    variantId?: number | string | null;
   }): Promise<ApiResponse<CartItem>> => {
     return apiClient.post<CartItem>(API_ENDPOINTS.LEGACY.ADD_TO_CART, data);
   },

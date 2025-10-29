@@ -1,21 +1,14 @@
 import { PaginationResponse } from "./api";
+import { Collection } from "./collection";
 
-// Cart item sử dụng ProductDetail
 export interface CartItem {
   id: string;
   product: ProductDetail;
   quantity: number;
-  selectedVariants?: Record<string, string>;
   addedAt?: string;
-}
-
-// Wishlist sử dụng ProductDetail
-export interface Wishlist {
-  id: string;
-  userId: string;
-  products: ProductDetail[];
-  createdAt: string;
-  updatedAt: string;
+  // store the chosen variant object (if any) and a unit price for stable pricing
+  selectedVariant?: any;
+  unitPrice?: number;
 }
 
 // Address type - cho shipping/billing
@@ -36,6 +29,7 @@ export interface Address {
 // Product types
 export interface ProductDetail {
   alias: string;
+  collections: Collection[];
   attributes: ProductAttributeDetail[];
   content: string;
   created_at: string;
@@ -178,7 +172,7 @@ export interface ProductSearchParams {
   statuses?: string[];
   collection_ids?: string[];
   page?: number;
-  limit?: number;
+  size?: number;
   sort_field?: string;
   sort_type?: string;
   max_price?: number;
@@ -192,7 +186,7 @@ export interface VariantSearchParams {
   key?: string[];
   product_ids?: string[];
   page?: number;
-  limit?: number;
+  size?: number;
   sort_field?: string;
   sort_type?: string;
 }

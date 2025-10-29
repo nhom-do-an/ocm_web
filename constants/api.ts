@@ -5,9 +5,10 @@ export const API_BASE_URL = 'https://ocm.alo123.net/api';
 export const API_ENDPOINTS = {
   // Auth endpoints
   AUTH: {
-    LOGIN: '/admin/auth/login',
-    REGISTER: '/admin/auth/register',
-    ME: '/admin/auth/me',
+    LOGIN: '/admin/customers/auth/login',
+    LOGIN_WITH_GOOGLE: '/admin/customers/auth/login-with-google',
+    REGISTER: '/admin/customers/auth/register',
+    ME: '/admin/customers/auth/me',
   },
 
   // Products endpoints  
@@ -23,7 +24,8 @@ export const API_ENDPOINTS = {
   // Collections endpoints
   COLLECTIONS: {
     LIST: '/admin/collections',
-    DETAIL: '/admin/collections', // + /{alias}
+    DETAIL_BY_ALIAS: '/admin/collections', // + /{alias}
+    DETAIL_BY_ID: '/admin/collections/detail', // + /{id}
     PRODUCT_TYPES: '/admin/collections/product-types', // + /{collection_id}
     CREATE: '/admin/collections',
   },

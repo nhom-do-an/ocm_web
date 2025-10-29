@@ -1,14 +1,6 @@
 import { ProductDetail } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-export interface CartItem {
-  id: string;
-  product: ProductDetail;
-  quantity: number;
-  selectedVariants?: Record<string, string>;
-  addedAt?: string;
-}
-
+import { CartItem } from '@/types';
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
@@ -25,8 +17,8 @@ const initialState: CartState = {
 
 const calculateTotal = (items: CartItem[]): number => {
   return items.reduce((total, item) => {
-    // Get price from the first variant or use 0 as fallback
-    const price = item.product.variants?.[0]?.price || 0;
+    // Prefer stored unitPrice on the cart item (stable price), fall back to selectedVariant price, then first variant
+    const price = item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price ?? 0;
     return total + price * item.quantity;
   }, 0);
 };
@@ -44,15 +36,22 @@ const cartSlice = createSlice({
       action: PayloadAction<{
         product: ProductDetail;
         quantity?: number;
-        selectedVariants?: Record<string, string>;
+        selectedVariant?: any;
       }>
     ) => {
-      const { product, quantity = 1, selectedVariants } = action.payload;
-      const existingItemIndex = state.items.findIndex(
-        (item) =>
-          item.product.id === product.id &&
-          JSON.stringify(item.selectedVariants) === JSON.stringify(selectedVariants)
-      );
+      const { product, quantity = 1, selectedVariant } = action.payload;
+
+      // Identify existing items by selectedVariant id when available, otherwise by product id + no variant
+      let existingItemIndex = -1;
+      if (selectedVariant && selectedVariant.id != null) {
+        existingItemIndex = state.items.findIndex(
+          (item) => item.product.id === product.id && item.selectedVariant?.id === selectedVariant.id
+        );
+      } else {
+        existingItemIndex = state.items.findIndex((item) => item.product.id === product.id && !item.selectedVariant);
+      }
+
+      const unitPrice = selectedVariant?.price ?? product.variants?.[0]?.price ?? 0;
 
       if (existingItemIndex !== -1) {
         state.items[existingItemIndex].quantity += quantity;
@@ -61,7 +60,8 @@ const cartSlice = createSlice({
           id: `${product.id}-${Date.now()}-${Math.random()}`,
           product,
           quantity,
-          selectedVariants,
+          selectedVariant,
+          unitPrice,
           addedAt: new Date().toISOString(),
         };
         state.items.push(newItem);

@@ -27,36 +27,42 @@ export interface PaginationResponse {
 }
 
 // Auth types
-export interface UserLoginRequest {
-  phone: string;
+export interface LoginCustomerRequest {
+  /** Either email or phone is accepted by the customer login endpoint */
+  email?: string;
+  phone?: string;
   password: string;
 }
 
-export interface UserRegisterRequest {
-  name: string;
+export interface RegisterCustomerRequest {
+  first_name: string;
+  last_name: string;
   password: string;
-  phone: string;
-  province_code: string;
-  store_name: string;
+  /** optional contact fields */
+  phone?: string;
+  email?: string;
 }
 
-export interface UserAuthResponse {
+// Login with Google payload for customer auth endpoint
+export interface LoginWithGoogleRequest {
+  id_token: string;
+}
+
+export interface CustomerAuthResponse {
   access_token: string;
-  refresh_token: string;
-  active: boolean;
   created_at: string;
+  dob: string;
   email: string;
   first_name: string;
+  gender: string;
   id: number;
-  is_owner: boolean;
-  last_login: string;
   last_name: string;
-  login_method: LoginMethod;
-  name: string;
+  note: string;
   phone: string;
+  refresh_token: string;
+  status: CustomerStatus;
   store_id: number;
   updated_at: string;
-  username: string;
   verified_email: boolean;
 }
 
@@ -65,6 +71,12 @@ export enum LoginMethod {
   Phone = 2,
   Google = 3,
   Facebook = 4,
+}
+
+
+export enum CustomerStatus {
+  Enabled = "enabled",
+  Disabled = "disabled",
 }
 
 

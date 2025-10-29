@@ -58,7 +58,11 @@ export function ShoppingCart() {
                   <div key={item.id} className="flex items-center space-x-4">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
                       <img
-                        src={item.product.images?.[0]?.url || '/images/placeholder.jpg'}
+                        src={
+                          item.selectedVariant?.image?.url ||
+                          item.product.images?.[0]?.url ||
+                          '/images/placeholder.jpg'
+                        }
                         alt={item.product.name}
                         className="w-full h-full object-cover"
                       />
@@ -69,17 +73,16 @@ export function ShoppingCart() {
                         {item.product.name}
                       </h3>
 
-                      {item.selectedVariants && (
-                        <div className="text-xs text-gray-500">
-                          {Object.entries(item.selectedVariants)
-                            .map(([key, value]) => <span key={key}>{value}</span>)
-                            .join(', ')}
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500">
+                          {item.selectedVariant.title !== "Default Title" ? <span> {item.selectedVariant.title}</span> : <span>-</span>}
+                      </div>
+                      
 
                       <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium text-primary">
-                          {formatPrice(item.product.variants?.[0]?.price || 0)}
+                        <div className="text-sm font-medium text-red-500">
+                          {formatPrice(
+                            (item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price) || 0
+                          )}
                         </div>
 
                         <div className="flex items-center space-x-2">
@@ -126,7 +129,7 @@ export function ShoppingCart() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-base font-medium">
                   <span>Tổng cộng:</span>
-                  <span className="text-primary">{formatPrice(total)}</span>
+                  <span className="text-red-500 text-2xl font-bold">{formatPrice(total)}</span>
                 </div>
 
                 <div className="space-y-2">

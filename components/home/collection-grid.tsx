@@ -9,11 +9,11 @@ interface CollectionGridProps {
 export function CollectionGrid({ collections }: CollectionGridProps) {
   const collectionsWithImages = collections.filter(
     (collection) =>
-      collection.attachments &&
-      collection.attachments.url &&
-      collection.attachments.url.trim() !== '' &&
-      collection.attachments.url !== '/images/placeholder.jpg' &&
-      !collection.attachments.url.includes('placeholder')
+      collection.image &&
+      collection.image.url &&
+      collection.image.url.trim() !== '' &&
+      collection.image.url !== '/images/placeholder.jpg' &&
+      !collection.image.url.includes('placeholder')
   );
 
   if (collectionsWithImages.length === 0) return null;
@@ -26,21 +26,21 @@ export function CollectionGrid({ collections }: CollectionGridProps) {
             Danh mục nổi bật
           </h2>
           <p className="mt-1 text-gray-600">
-            Khám phá các sản phẩm gia dụng cao cấp
+            Khám phá các sản phẩm cao cấp
           </p>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide justify-center">
+  <div className="flex gap-4 overflow-x-auto pb-4 md:scrollbar-hide justify-start md:justify-center pl-4 md:pl-0 sm:snap-x sm:snap-mandatory md:snap-none">
           {collectionsWithImages.map((collection) => (
             <Link
               key={collection.id}
               href={`/collection/${collection.alias}`}
-              className="flex-shrink-0"
+              className="flex-shrink-0 sm:snap-start"
             >
               <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20 hover:border-red-500 border-2 border-transparent w-48">
                 <div className="relative aspect-[3/2] flex items-center justify-center bg-white">
                   <img
-                    src={collection.attachments?.url}
+                    src={collection.image?.url}
                     alt={collection.name}
                     className="max-w-full max-h-full object-contain"
                   />

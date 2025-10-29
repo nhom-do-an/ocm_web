@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse } from '@/types/api';
-import { CollectionDetail, CollectionProductTypeDetail, GetListCollectionRequest, GetListCollectionResponse } from '@/types/collection';
+import { CollectionDetail, GetListCollectionRequest, GetListCollectionResponse } from '@/types/collection';
 
 export const collectionsService = {
   // Get collections list
@@ -22,11 +22,15 @@ export const collectionsService = {
 
   // Get collection detail by alias
   getCollectionByAlias: async (alias: string): Promise<ApiResponse<CollectionDetail>> => {
-    return apiClient.get<CollectionDetail>(`${API_ENDPOINTS.COLLECTIONS.DETAIL}/${alias}`);
+    return apiClient.get<CollectionDetail>(`${API_ENDPOINTS.COLLECTIONS.DETAIL_BY_ALIAS}/${alias}`);
   },
 
-  // Get product types in collection
-  getCollectionProductTypes: async (collectionId: number): Promise<ApiResponse<CollectionProductTypeDetail[]>> => {
-    return apiClient.get<CollectionProductTypeDetail[]>(`${API_ENDPOINTS.COLLECTIONS.PRODUCT_TYPES}/${collectionId}`);
+  // Get product types in collection (returns string[] of product type names)
+  getCollectionProductTypes: async (collectionId: number): Promise<ApiResponse<string[]>> => {
+    return apiClient.get<string[]>(`${API_ENDPOINTS.COLLECTIONS.PRODUCT_TYPES}/${collectionId}`);
   },
+
+  getCollectionById: async (id: number): Promise<ApiResponse<CollectionDetail>> => {
+    return apiClient.get<CollectionDetail>(`${API_ENDPOINTS.COLLECTIONS.DETAIL_BY_ID}/${id}`);
+  }
 };

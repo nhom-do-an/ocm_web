@@ -29,7 +29,6 @@ export interface OrderItem {
   product: ProductDetail; 
   quantity: number;
   price: number;
-  selectedVariants?: Record<string, string>;
 }
 
 export type OrderStatus =
@@ -49,7 +48,7 @@ export type PaymentStatus =
   | 'cancelled'
   | 'refunded';
 
-export type PaymentMethod = 'cod' | 'bank_transfer' | 'credit_card' | 'momo' | 'zalopay' | 'vnpay';
+export type PaymentMethod = 'cod' | 'bank_transfer';
 
 export type ShippingMethod = 'standard' | 'express' | 'same_day';
 

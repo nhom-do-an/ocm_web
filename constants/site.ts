@@ -25,7 +25,7 @@ export const NAVIGATION = {
     },
     {
       name: 'Tất cả sản phẩm',
-      href: '/collection',
+      href: '/products',
     },
     {
       name: 'Khuyến mãi',

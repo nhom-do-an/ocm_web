@@ -1,13 +1,14 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { UserAuthResponse, UserLoginRequest, UserRegisterRequest } from '@/types/api';
+import { CustomerAuthResponse, LoginCustomerRequest, RegisterCustomerRequest } from '@/types/api';
 import { authService } from '@/services/api';
 
 interface AuthState {
-  user: UserAuthResponse | null;
+  user: CustomerAuthResponse | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  restored: boolean;
 }
 
 const initialState: AuthState = {
@@ -16,12 +17,13 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  restored: false,
 };
 
 // Async thunks
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: UserLoginRequest, { rejectWithValue }) => {
+  async (credentials: LoginCustomerRequest, { rejectWithValue }) => {
     try {
       const response = await authService.login(credentials);
       return response;
@@ -33,7 +35,7 @@ export const loginUser = createAsyncThunk(
 
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
-  async (userData: UserRegisterRequest, { rejectWithValue }) => {
+  async (userData: RegisterCustomerRequest, { rejectWithValue }) => {
     try {
       const response = await authService.register(userData);
       return response;
@@ -42,6 +44,18 @@ export const registerUser = createAsyncThunk(
     }
   }
 );
+
+export const loginWithGoogle = createAsyncThunk<CustomerAuthResponse, string, { rejectValue: string }>(
+  'auth/loginWithGoogle',
+  async (idToken, { rejectWithValue }) => {
+    try {
+      const response = await authService.loginWithGoogle(idToken)
+      return response
+    } catch (error: any) {
+      return rejectWithValue(error?.message || 'Google login failed')
+    }
+  }
+)
 
 export const getUserProfile = createAsyncThunk(
   'auth/getUserProfile',
@@ -57,7 +71,7 @@ export const getUserProfile = createAsyncThunk(
 
 export const updateUserProfile = createAsyncThunk(
   'auth/updateUserProfile',
-  async (userData: Partial<UserRegisterRequest>, { rejectWithValue }) => {
+  async (userData: Partial<RegisterCustomerRequest>, { rejectWithValue }) => {
     try {
       const response = await authService.updateProfile(userData);
       return response;
@@ -85,10 +99,13 @@ const authSlice = createSlice({
     setAuthenticated: (state, action: PayloadAction<boolean>) => {
       state.isAuthenticated = action.payload;
     },
-
     initializeAuth: (state) => {
       // Check if user is authenticated on app startup
       state.isAuthenticated = authService.isAuthenticated();
+    },
+
+    setRestored: (state, action: PayloadAction<boolean>) => {
+      state.restored = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -133,15 +150,19 @@ const authSlice = createSlice({
       .addCase(getUserProfile.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.restored = false;
       })
       .addCase(getUserProfile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload;
         state.error = null;
+        state.restored = true;
       })
       .addCase(getUserProfile.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+        // Even if fetching profile failed, we mark restore as completed so UI can render authentically
+        state.restored = true;
       })
 
       // Update profile
@@ -166,10 +187,32 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.isLoading = false;
         state.error = null;
+        state.restored = true;
       });
+      
+      // Google login
+      builder
+        .addCase(loginWithGoogle.pending, (state) => {
+          state.isLoading = true;
+          state.error = null;
+        })
+        .addCase(loginWithGoogle.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.user = action.payload;
+          state.token = action.payload.access_token || null;
+          state.isAuthenticated = true;
+          state.error = null;
+        })
+        .addCase(loginWithGoogle.rejected, (state, action) => {
+          state.isLoading = false;
+          state.error = action.payload as string;
+          state.isAuthenticated = false;
+        });
   },
 });
 
 export const { clearError, setAuthenticated, initializeAuth } = authSlice.actions;
+
+export const { setRestored } = authSlice.actions;
 
 export default authSlice.reducer;

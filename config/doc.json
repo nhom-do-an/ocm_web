@@ -159,6 +159,168 @@
                 }
             }
         },
+        "/admin/channels": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kênh bán hàng"
+                ],
+                "summary": "API lấy danh sách kênh bán hàng",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Channel"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/channels/publications": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kênh bán hàng"
+                ],
+                "summary": "API lấy danh sách kênh bán hàng đã kết nối",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.PublicationDetail"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/channels/{channel_id}/connect": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kênh bán hàng"
+                ],
+                "summary": "API kết nối kênh bán hàng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "int",
+                        "description": "ID kênh bán hàng",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Publication"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/channels/{channel_id}/disconnect": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Kênh bán hàng"
+                ],
+                "summary": "API hủy kết nối kênh bán hàng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "int",
+                        "description": "ID kênh bán hàng",
+                        "name": "channel_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/admin/collections": {
             "get": {
                 "consumes": [
@@ -266,6 +428,56 @@
                 }
             }
         },
+        "/admin/collections/detail/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Danh mục"
+                ],
+                "summary": "API lấy chi tiết danh mục theo ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID của bộ sưu tập",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.CollectionDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/admin/collections/product-types/{collection_id}": {
             "get": {
                 "consumes": [
@@ -362,6 +574,247 @@
                 }
             }
         },
+        "/admin/customers": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "API lấy danh sách khách hàng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ khóa tìm kiếm (họ, tên, email, số điện thoại)",
+                        "name": "key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Số trang",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Kích thước trang",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Trạng thái khách hàng (enabled, disabled)",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.GetListCustomersResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/customers/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "API đăng nhập tài khoản khách hàng",
+                "parameters": [
+                    {
+                        "description": "Dữ liệu đăng nhập tài khoản khách hàng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginCustomerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.CustomerAuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/customers/auth/login-with-google": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "API đăng nhập tài khoản khách hàng bằng Google",
+                "parameters": [
+                    {
+                        "description": "Dữ liệu đăng nhập tài khoản khách hàng bằng Google",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginWithGoogleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.CustomerAuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/customers/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "API khách hàng lấy thông tin cá nhân",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Customer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/customers/auth/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "API đăng ký tài khoản khách hàng",
+                "parameters": [
+                    {
+                        "description": "Dữ liệu đăng ký tài khoản khách hàng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RegisterCustomerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.CustomerAuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/admin/file/upload": {
             "post": {
                 "consumes": [
@@ -416,7 +869,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.Attachment"
+                                            "$ref": "#/definitions/models.DetailAttachment"
                                         }
                                     }
                                 }
@@ -581,7 +1034,7 @@
                         "type": "integer",
                         "default": 20,
                         "description": "Số bản ghi trên trang",
-                        "name": "limit",
+                        "name": "size",
                         "in": "query"
                     },
                     {
@@ -691,6 +1144,56 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/models.Product"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/products/detail/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sản phẩm"
+                ],
+                "summary": "API lấy chi tiết sản phẩm theo ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID sản phẩm",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ProductDetail"
                                         }
                                     }
                                 }
@@ -927,7 +1430,7 @@
                         "type": "integer",
                         "default": 20,
                         "description": "Số bản ghi trên trang",
-                        "name": "limit",
+                        "name": "size",
                         "in": "query"
                     }
                 ],
@@ -944,6 +1447,168 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/models.GetListVariantResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/carts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Giỏ hàng"
+                ],
+                "summary": "API lấy giỏ hàng hiện tại",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.CartDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/carts/add": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Giỏ hàng"
+                ],
+                "summary": "API thêm sản phẩm vào giỏ hàng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Dữ liệu thêm sản phẩm vào giỏ hàng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddItemToCartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.LineItem"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/carts/change": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Giỏ hàng"
+                ],
+                "summary": "API cập nhật sản phẩm trong giỏ hàng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Origin header",
+                        "name": "Origin",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Dữ liệu cập nhật sản phẩm trong giỏ hàng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateLineItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.LineItem"
                                         }
                                     }
                                 }
@@ -1109,6 +1774,26 @@
         }
     },
     "definitions": {
+        "models.AddItemToCartRequest": {
+            "type": "object",
+            "properties": {
+                "cart_token": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "reference_id": {
+                    "type": "integer"
+                },
+                "reference_type": {
+                    "$ref": "#/definitions/models.ReferenceType"
+                },
+                "variant_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Attachment": {
             "type": "object",
             "properties": {
@@ -1152,6 +1837,58 @@
                 "InUsed"
             ]
         },
+        "models.CartDetail": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "customer_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "item_count": {
+                    "type": "integer"
+                },
+                "line_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.LineItemDetail"
+                    }
+                },
+                "requires_shipping": {
+                    "type": "boolean"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.CartStatus"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "total_price": {
+                    "type": "number"
+                },
+                "total_weight": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CartStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "converted"
+            ],
+            "x-enum-varnames": [
+                "CartActive",
+                "CartConverted"
+            ]
+        },
         "models.Category": {
             "type": "string",
             "enum": [
@@ -1163,6 +1900,42 @@
                 "ProductCategory",
                 "UserCategory",
                 "CollectionCategory"
+            ]
+        },
+        "models.Channel": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "short_name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.ChannelType"
+                }
+            }
+        },
+        "models.ChannelType": {
+            "type": "string",
+            "enum": [
+                "website",
+                "pos",
+                "tiktokshop"
+            ],
+            "x-enum-varnames": [
+                "ChannelWebsite",
+                "ChannelPOS",
+                "ChannelTikTokshop"
             ]
         },
         "models.Collection": {
@@ -1213,9 +1986,6 @@
                 "alias": {
                     "type": "string"
                 },
-                "attachments": {
-                    "$ref": "#/definitions/models.DetailAttachment"
-                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1228,6 +1998,9 @@
                 },
                 "id": {
                     "type": "integer"
+                },
+                "image": {
+                    "$ref": "#/definitions/models.DetailAttachment"
                 },
                 "meta_description": {
                     "type": "string"
@@ -1502,6 +2275,119 @@
                 }
             }
         },
+        "models.Customer": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.CustomerStatus"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "verified_email": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.CustomerAuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.CustomerStatus"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "verified_email": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.CustomerStatus": {
+            "type": "string",
+            "enum": [
+                "enabled",
+                "disabled"
+            ],
+            "x-enum-comments": {
+                "CDisable": "khách hàng không được tạo trên pos",
+                "CEnabled": "khách hàng mua hàng trên trang web"
+            },
+            "x-enum-descriptions": [
+                "khách hàng mua hàng trên trang web",
+                "khách hàng không được tạo trên pos"
+            ],
+            "x-enum-varnames": [
+                "CEnabled",
+                "CDisable"
+            ]
+        },
         "models.DetailAttachment": {
             "type": "object",
             "properties": {
@@ -1571,6 +2457,20 @@
                 }
             }
         },
+        "models.GetListCustomersResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "customers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Customer"
+                    }
+                }
+            }
+        },
         "models.GetListProductsResponse": {
             "type": "object",
             "properties": {
@@ -1610,6 +2510,85 @@
                 },
                 "on_hand": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.LineItem": {
+            "type": "object",
+            "properties": {
+                "grams": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "requires_shipping": {
+                    "type": "boolean"
+                },
+                "variant_id": {
+                    "type": "integer"
+                },
+                "variant_title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LineItemDetail": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "grams": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "original_price": {
+                    "type": "number"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "product_exist": {
+                    "type": "boolean"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "requires_shipping": {
+                    "type": "boolean"
+                },
+                "total_price": {
+                    "type": "number"
+                },
+                "variant_id": {
+                    "type": "integer"
+                },
+                "variant_title": {
+                    "type": "string"
                 }
             }
         },
@@ -1673,6 +2652,17 @@
                 "LInactive"
             ]
         },
+        "models.LoginCustomerRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "models.LoginMethod": {
             "type": "integer",
             "enum": [
@@ -1687,6 +2677,14 @@
                 "Google",
                 "Facebook"
             ]
+        },
+        "models.LoginWithGoogleRequest": {
+            "type": "object",
+            "properties": {
+                "id_token": {
+                    "type": "string"
+                }
+            }
         },
         "models.OldRegion": {
             "type": "object",
@@ -1807,6 +2805,9 @@
                 },
                 "updated_at": {
                     "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -1840,6 +2841,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.ProductAttributeDetail"
+                    }
+                },
+                "collections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Collection"
                     }
                 },
                 "content": {
@@ -1914,6 +2921,89 @@
                 "PInactivr"
             ]
         },
+        "models.Publication": {
+            "type": "object",
+            "properties": {
+                "channel_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.PublicationStatus"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PublicationDetail": {
+            "type": "object",
+            "properties": {
+                "channel_alias": {
+                    "type": "string"
+                },
+                "channel_id": {
+                    "type": "integer"
+                },
+                "channel_image_url": {
+                    "type": "string"
+                },
+                "channel_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.PublicationStatus"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PublicationStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "inactive"
+            ],
+            "x-enum-varnames": [
+                "PublicationActive",
+                "PublicationInactive"
+            ]
+        },
+        "models.ReferenceType": {
+            "type": "string",
+            "enum": [
+                "order",
+                "return_order",
+                "cart",
+                "shipment",
+                "line_item"
+            ],
+            "x-enum-varnames": [
+                "ROrder",
+                "RReturnOrder",
+                "RCart",
+                "RShipment",
+                "RLineTime"
+            ]
+        },
         "models.Region": {
             "type": "object",
             "properties": {
@@ -1951,6 +3041,26 @@
                 "RDistrict",
                 "RWard"
             ]
+        },
+        "models.RegisterCustomerRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
         },
         "models.Response": {
             "type": "object",
@@ -2019,6 +3129,17 @@
                 "REndsWith"
             ]
         },
+        "models.UpdateLineItemRequest": {
+            "type": "object",
+            "properties": {
+                "line_item_id": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.UserAuthResponse": {
             "type": "object",
             "properties": {
@@ -2029,6 +3150,9 @@
                     "type": "boolean"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "domain_store": {
                     "type": "string"
                 },
                 "email": {
@@ -2102,6 +3226,9 @@
                     "type": "boolean"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "domain_store": {
                     "type": "string"
                 },
                 "email": {

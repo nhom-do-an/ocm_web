@@ -12,3 +12,6 @@ export { CollectionView } from './collection';
 
 // Cart section
 export { CartView } from './cart';
+
+// Auth section
+export { AuthView } from './auth';

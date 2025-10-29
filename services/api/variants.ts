@@ -8,7 +8,7 @@ export const variantsService = {
   getVariants: async (params?: VariantSearchParams): Promise<ApiResponse<GetListVariantResponse>> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.size) queryParams.append('size', params.size.toString());
     if (params?.key?.length) {
       params.key.forEach(k => queryParams.append('key', k));
     }

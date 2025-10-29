@@ -24,7 +24,7 @@ const initialState: ProductsState = {
   totalProducts: 0,
   filters: {
     page: 1,
-    limit: 12,
+    size: 12,
   },
 };
 
@@ -102,9 +102,9 @@ const productsSlice = createSlice({
         state.loading = false;
         state.products = action.payload.products;
         state.totalProducts = action.payload.count;
-        // Calculate pages if limit is provided
-        if (state.filters.limit) {
-          state.totalPages = Math.ceil(action.payload.count / state.filters.limit);
+        // Calculate pages if size is provided
+        if (state.filters.size) {
+          state.totalPages = Math.ceil(action.payload.count / state.filters.size);
         }
       })
       .addCase(fetchProducts.rejected, (state, action) => {
@@ -149,8 +149,8 @@ const productsSlice = createSlice({
         state.loading = false;
         state.products = action.payload.products;
         state.totalProducts = action.payload.count;
-        if (state.filters.limit) {
-          state.totalPages = Math.ceil(action.payload.count / state.filters.limit);
+        if (state.filters.size) {
+          state.totalPages = Math.ceil(action.payload.count / state.filters.size);
         }
       })
       .addCase(searchProducts.rejected, (state, action) => {
@@ -167,8 +167,8 @@ const productsSlice = createSlice({
         state.loading = false;
         state.products = action.payload.products;
         state.totalProducts = action.payload.count;
-        if (state.filters.limit) {
-          state.totalPages = Math.ceil(action.payload.count / state.filters.limit);
+        if (state.filters.size) {
+          state.totalPages = Math.ceil(action.payload.count / state.filters.size);
         }
       })
       .addCase(fetchProductsByCollection.rejected, (state, action) => {

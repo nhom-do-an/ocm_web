@@ -1,16 +1,18 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Quicksand } from 'next/font/google';
 import './globals.css';
 import { ReduxProvider } from '@/redux/provider';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
+import HeaderGuard from '@/components/layout/header-guard'
+import FooterGuard from '@/components/layout/footer-guard'
 import { ShoppingCart } from '@/components/cart/shopping-cart';
 import { BackToTop } from '@/components/ui/back-to-top';
 import { SITE_CONFIG } from '@/constants/site';
-
-const inter = Inter({
+import ToastProvider from '@/components/ui/toast-provider';
+import AuthRestoreGuard from '@/components/layout/auth-restore-guard';
+const quicksand = Quicksand({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-quicksand',
 });
 
 export const metadata: Metadata = {
@@ -65,15 +67,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${quicksand.variable} font-sans antialiased`}>
         <ReduxProvider>
+          <AuthRestoreGuard />
           <div className="relative flex min-h-screen flex-col">
-            <Header />
+            <HeaderGuard />
             <main className="flex-1">{children}</main>
-            <Footer />
+            <FooterGuard />
           </div>
           <ShoppingCart />
           <BackToTop />
+          <ToastProvider />
         </ReduxProvider>
       </body>
     </html>

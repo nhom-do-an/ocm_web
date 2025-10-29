@@ -1,43 +1,44 @@
-import { apiClient } from './client';
+import { apiClient, AuthManager } from './client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { 
-  UserAuthResponse, 
-  UserLoginRequest, 
-  UserRegisterRequest, 
+  CustomerAuthResponse, 
+  LoginCustomerRequest, 
+  RegisterCustomerRequest, 
   ApiResponse 
 } from '@/types/api';
 
 export class AuthService {
-  async login(credentials: UserLoginRequest): Promise<UserAuthResponse> {
-    const response = await apiClient.post<UserAuthResponse>(
-      API_ENDPOINTS.AUTH.LOGIN, 
-      credentials
-    );
-    
-    if (response.success && response.data) {
-      // Store tokens if login successful
-      if (response.data.access_token) {
-        apiClient.setAuthToken(response.data.access_token);
-      }
+  async login(credentials: LoginCustomerRequest): Promise<CustomerAuthResponse> {
+    const response = await apiClient.post<CustomerAuthResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials)
+
+    if (!response || !response.success) {
+      throw new Error(response?.message || 'Login failed')
     }
-    
-    return response.data!;
+
+    const data = response.data
+    if (data) {
+      // Persist both access and refresh tokens when provided
+      AuthManager.setTokens(data.access_token, data.refresh_token)
+      apiClient.setAuthToken(data.access_token)
+    }
+
+    return data
   }
 
-  async register(userData: UserRegisterRequest): Promise<UserAuthResponse> {
-    const response = await apiClient.post<UserAuthResponse>(
-      API_ENDPOINTS.AUTH.REGISTER, 
-      userData
-    );
-    
-    if (response.success && response.data) {
-      // Store tokens if registration successful
-      if (response.data.access_token) {
-        apiClient.setAuthToken(response.data.access_token);
-      }
+  async register(userData: RegisterCustomerRequest): Promise<CustomerAuthResponse> {
+    const response = await apiClient.post<CustomerAuthResponse>(API_ENDPOINTS.AUTH.REGISTER, userData)
+
+    if (!response || !response.success) {
+      throw new Error(response?.message || 'Registration failed')
     }
-    
-    return response.data!;
+
+    const data = response.data
+    if (data) {
+      AuthManager.setTokens(data.access_token, data.refresh_token)
+      apiClient.setAuthToken(data.access_token)
+    }
+
+    return data
   }
 
   async logout(): Promise<void> {
@@ -52,19 +53,27 @@ export class AuthService {
     }
   }
 
-  async getProfile(): Promise<UserAuthResponse> {
-    const response = await apiClient.get<UserAuthResponse>(
-      API_ENDPOINTS.AUTH.ME
-    );
-    return response.data!;
+  async getProfile(): Promise<CustomerAuthResponse> {
+    const response = await apiClient.get<CustomerAuthResponse>(API_ENDPOINTS.AUTH.ME)
+    if (!response || !response.success) throw new Error(response?.message || 'Failed to fetch profile')
+    return response.data
   }
 
-  async updateProfile(userData: Partial<UserRegisterRequest>): Promise<UserAuthResponse> {
-    const response = await apiClient.put<UserAuthResponse>(
-      API_ENDPOINTS.AUTH.ME, 
-      userData
-    );
-    return response.data!;
+  async updateProfile(userData: Partial<RegisterCustomerRequest>): Promise<CustomerAuthResponse> {
+    const response = await apiClient.put<CustomerAuthResponse>(API_ENDPOINTS.AUTH.ME, userData)
+    if (!response || !response.success) throw new Error(response?.message || 'Failed to update profile')
+    return response.data
+  }
+
+  async loginWithGoogle(token: string): Promise<CustomerAuthResponse> {
+    const response = await apiClient.post<CustomerAuthResponse>(API_ENDPOINTS.AUTH.LOGIN_WITH_GOOGLE, { id_token: token })
+    if (!response || !response.success) throw new Error(response?.message || 'Google login failed')
+    const data = response.data
+    if (data) {
+      AuthManager.setTokens(data.access_token, data.refresh_token)
+      apiClient.setAuthToken(data.access_token)
+    }
+    return data
   }
 
   isAuthenticated(): boolean {

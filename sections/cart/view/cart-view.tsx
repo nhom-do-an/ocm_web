@@ -64,29 +64,23 @@ export default function CartView() {
                     <div className="flex-1">
                       <h3 className="font-medium mb-2">{item.product.name}</h3>
 
-                      {/* Selected Variants */}
-                      {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
-                        <div className="text-sm text-gray-600 mb-2">
-                          {Object.entries(item.selectedVariants).map(([key, value]) => (
-                            <span key={key} className="mr-2">
-                              {value}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      <div className="text-sm text-gray-600 mb-2">
+                          {item.selectedVariant.title !== "Default Title" ? <span> {item.selectedVariant.title}</span> : <span>-</span>}
+                      </div>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-red-600">
-                            {(item.product.variants?.[0]?.price || 0).toLocaleString()}đ
-                          </span>
-                          {item.product.variants?.[0]?.compare_at_price && 
-                           item.product.variants[0].compare_at_price > (item.product.variants[0].price || 0) && (
-                            <span className="text-sm text-gray-400 line-through">
-                              {item.product.variants[0].compare_at_price.toLocaleString()}đ
+                            {/* Show unit price from cart item (stable), fall back to selectedVariant or first variant */}
+                            <span className="font-bold text-red-600">
+                              {(item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price ?? 0).toLocaleString()}đ
                             </span>
-                          )}
-                        </div>
+                            {((item.selectedVariant?.compare_at_price ?? item.product.variants?.[0]?.compare_at_price) &&
+                             (item.selectedVariant?.compare_at_price ?? item.product.variants?.[0]?.compare_at_price) > (item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price ?? 0)) && (
+                              <span className="text-sm text-gray-400 line-through">
+                                {(item.selectedVariant?.compare_at_price ?? item.product.variants?.[0]?.compare_at_price)?.toLocaleString()}đ
+                              </span>
+                            )}
+                          </div>
 
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-2">
@@ -120,7 +114,7 @@ export default function CartView() {
                       {/* Subtotal */}
                       <div className="text-right mt-2">
                         <span className="font-medium">
-                          Tổng: {((item.product.variants?.[0]?.price || 0) * item.quantity).toLocaleString()}đ
+                          Tổng: {((item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price ?? 0) * item.quantity).toLocaleString()}đ
                         </span>
                       </div>
                     </div>

@@ -16,7 +16,7 @@ export interface CollectionDetail {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  attachments: DetailAttachment | null;
+  image: DetailAttachment | null;
   rules: Rule[];
 }
 

@@ -1,63 +1,41 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { addToCart } from '@/redux/slices/cartSlice';
+import { fetchProducts, setFilters } from '@/redux/slices/productsSlice';
+import { ProductGrid } from '@/components/product/product-grid';
 import {
-  fetchProducts,
-  searchProducts,
-  setFilters,
-} from '@/redux/slices/productsSlice';
-import { ProductDetail } from '@/types/product';
-import { getProductPrice, getProductComparePrice, getProductImageUrl, getProductStock } from '@/utils/product';
-import { useDebounce } from '@/hooks/useDebounce';
+  Pagination,
+  PaginationContent,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationPages,
+} from '@/components/ui/pagination';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function ProductsView() {
   const dispatch = useAppDispatch();
-  const { products, loading, filters, totalPages } = useAppSelector(
-    (state) => state.products
+  const { products, loading, filters, totalPages, totalProducts } = useAppSelector(
+    (state) => state.products as any
   );
-  const [localSearchQuery, setLocalSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(localSearchQuery, 500);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // read query params
+  const q = searchParams.get('q') || '';
+  const page = Number(searchParams.get('page') || '1');
+  const size = Number(searchParams.get('size') || '12');
+  const sort_field = searchParams.get('sort_field') || undefined;
+  const sort_type = searchParams.get('sort_type') || undefined;
 
   useEffect(() => {
-    dispatch(fetchProducts({}));
-  }, [dispatch]);
-
-  // Auto search với debounce
-  useEffect(() => {
-    if (debouncedSearchQuery.trim()) {
-      dispatch(searchProducts({ query: debouncedSearchQuery }));
-    } else if (debouncedSearchQuery === '') {
-      dispatch(fetchProducts({}));
-    }
-  }, [debouncedSearchQuery, dispatch]);
-
-  const handleSearch = () => {
-    if (localSearchQuery.trim()) {
-      dispatch(searchProducts({ query: localSearchQuery }));
-    } else {
-      dispatch(fetchProducts({}));
-    }
-  };
-
-  const handleAddToCart = (product: ProductDetail) => {
-    dispatch(
-      addToCart({
-        product: product,
-        quantity: 1,
-      })
-    );
-  };
-
-  const handleSortChange = (sort_field: string | undefined, sort_type: string | undefined) => {
-    dispatch(setFilters({ sort_field, sort_type, page: 1 }));
-    dispatch(fetchProducts({ sort_field, sort_type }));
-  };
+    const params: any = { page, size };
+    if (q) params.key = [q];
+    if (sort_field) params.sort_field = sort_field;
+    if (sort_type) params.sort_type = sort_type;
+    dispatch(fetchProducts(params));
+    dispatch(setFilters({ page, size, sort_field, sort_type }));
+  }, [dispatch, q, page, size, sort_field, sort_type]);
 
   if (loading) {
     return (
@@ -73,38 +51,11 @@ export default function ProductsView() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">Tất cả sản phẩm</h1>
 
-        {/* Search and Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Tìm kiếm sản phẩm..."
-                value={localSearchQuery}
-                onChange={(e) => setLocalSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              />
-              <Button onClick={handleSearch}>Tìm kiếm</Button>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <select
-              value={filters.sort_field || 'created_at'}
-              onChange={(e) => handleSortChange(e.target.value, filters.sort_type)}
-              className="px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value="created_at">Mới nhất</option>
-              <option value="price">Giá thấp đến cao</option>
-              <option value="name">Tên A-Z</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Search Results Info */}
-                {localSearchQuery && (
+        {q && (
           <div className="mb-6">
             <h2 className="text-xl font-semibold">
-              Kết quả tìm kiếm cho "{localSearchQuery}": {products.length} sản phẩm
+              Kết quả tìm kiếm cho "{q}"
+              {totalProducts && totalProducts > 0 ? `: ${totalProducts} sản phẩm` : ''}
             </h2>
           </div>
         )}
@@ -116,84 +67,45 @@ export default function ProductsView() {
           <p className="text-gray-500">Không tìm thấy sản phẩm nào.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => {
-            const price = getProductPrice(product);
-            const comparePrice = getProductComparePrice(product);
-            const imageUrl = getProductImageUrl(product);
-            const stock = getProductStock(product);
-            const isInStock = stock > 0;
-            const discountPercentage = comparePrice && price ? Math.round(((comparePrice - price) / comparePrice) * 100) : null;
-
-            return (
-              <Card
-                key={product.id}
-                className="group cursor-pointer hover:shadow-lg transition-shadow"
-              >
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                    <img
-                      src={imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                  </div>
-
-                  <h3 className="font-medium text-sm mb-2 line-clamp-2">{product.name}</h3>
-
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-red-600 font-bold">{price.toLocaleString()}đ</span>
-                    {comparePrice && comparePrice > price && (
-                      <span className="text-gray-400 line-through text-sm">
-                        {comparePrice.toLocaleString()}đ
-                      </span>
-                    )}
-                    {discountPercentage && (
-                      <Badge variant="destructive" className="text-xs">
-                        -{discountPercentage}%
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-500">
-                      {isInStock ? `Còn ${stock} sản phẩm` : 'Hết hàng'}
-                    </span>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    onClick={() => handleAddToCart(product)}
-                    disabled={!isInStock}
-                  >
-                    {isInStock ? 'Thêm vào giỏ' : 'Hết hàng'}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <ProductGrid products={products} />
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-8 space-x-2">
-          <div className="flex space-x-1">
-            {[...Array(totalPages)].map((_, i) => (
-              <Button
-                key={i}
-                variant={filters.page === i + 1 ? 'default' : 'outline'}
-                size="sm"
+        <div className="mt-8">
+          <Pagination>
+            <PaginationContent>
+              <PaginationPrevious
                 onClick={() => {
-                  dispatch(setFilters({ page: i + 1 }));
-                  dispatch(fetchProducts({ ...filters, page: i + 1 }));
+                  const prev = Math.max(1, page - 1);
+                  const params = new URLSearchParams(Array.from(searchParams.entries()));
+                  params.set('page', String(prev));
+                  router.push(`/products?${params.toString()}`);
                 }}
-              >
-                {i + 1}
-              </Button>
-            ))}
-          </div>
+                className="mr-2"
+              />
+
+              <PaginationPages
+                totalPages={totalPages}
+                currentPage={page}
+                onPageClick={(p) => {
+                  const params = new URLSearchParams(Array.from(searchParams.entries()));
+                  params.set('page', String(p));
+                  router.push(`/products?${params.toString()}`);
+                }}
+              />
+
+              <PaginationNext
+                onClick={() => {
+                  const next = Math.min(totalPages, page + 1);
+                  const params = new URLSearchParams(Array.from(searchParams.entries()));
+                  params.set('page', String(next));
+                  router.push(`/products?${params.toString()}`);
+                }}
+                className="ml-2"
+              />
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </div>
