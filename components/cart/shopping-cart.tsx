@@ -1,31 +1,38 @@
-'use client';
+ 'use client';
 
+import React, { useEffect } from 'react';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
-import { removeFromCart, updateQuantity, setCartOpen } from '@/redux/slices/cartSlice';
+import { removeLineItemApi, updateLineItemApi, setCartOpen, fetchCart } from '@/redux/slices/cartSlice';
 import { formatPrice } from '@/utils';
 
 export function ShoppingCart() {
   const dispatch = useAppDispatch();
   const { items, isOpen, total } = useAppSelector((state) => state.cart);
 
-  const handleRemoveItem = (itemId: string) => {
-    dispatch(removeFromCart(itemId));
+  const handleRemoveItem = (itemId: number | string) => {
+    dispatch(removeLineItemApi({ line_item_id: itemId }));
   };
 
-  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
-    dispatch(updateQuantity({ itemId, quantity: newQuantity }));
+  const handleUpdateQuantity = (itemId: number | string, newQuantity: number) => {
+    dispatch(updateLineItemApi({ line_item_id: itemId, quantity: newQuantity }));
   };
 
   const handleClose = () => {
     dispatch(setCartOpen(false));
   };
 
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(fetchCart());
+    }
+  }, [isOpen, dispatch]);
+
+  const itemCount = items.reduce((sum, item) => sum + (item.quantity ?? 0), 0);
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
@@ -58,31 +65,25 @@ export function ShoppingCart() {
                   <div key={item.id} className="flex items-center space-x-4">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
                       <img
-                        src={
-                          item.selectedVariant?.image?.url ||
-                          item.product.images?.[0]?.url ||
-                          '/images/placeholder.jpg'
-                        }
-                        alt={item.product.name}
+                        src={item.image_url || '/images/placeholder.jpg'}
+                        alt={item.product_name || 'product'}
                         className="w-full h-full object-cover"
                       />
                     </div>
 
                     <div className="flex-1 space-y-1">
                       <h3 className="text-sm font-medium leading-tight line-clamp-2">
-                        {item.product.name}
+                        {item.product_name ?? 'Product'}
                       </h3>
 
-                      <div className="text-xs text-gray-500">
-                          {item.selectedVariant.title !== "Default Title" ? <span> {item.selectedVariant.title}</span> : <span>-</span>}
-                      </div>
+            <div className="text-xs text-gray-500">
+              {item.variant_title !== 'Default Title' ? <span>{item.variant_title}</span> : <span>-</span>}
+            </div>
                       
 
                       <div className="flex items-center justify-between">
                         <div className="text-sm font-medium text-red-500">
-                          {formatPrice(
-                            (item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price) || 0
-                          )}
+                          {formatPrice(item.price ?? 0)}
                         </div>
 
                         <div className="flex items-center space-x-2">
@@ -90,21 +91,21 @@ export function ShoppingCart() {
                             variant="outline"
                             size="sm"
                             className="h-7 w-7 p-0"
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
+                            onClick={() => handleUpdateQuantity(item.id, (item.quantity ?? 0) - 1)}
+                            disabled={(item.quantity ?? 0) <= 1}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
 
                           <span className="text-sm font-medium w-8 text-center">
-                            {item.quantity}
+                            {item.quantity ?? 0}
                           </span>
 
                           <Button
                             variant="outline"
                             size="sm"
                             className="h-7 w-7 p-0"
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => handleUpdateQuantity(item.id, (item.quantity ?? 0) + 1)}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>

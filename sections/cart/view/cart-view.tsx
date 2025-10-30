@@ -2,8 +2,9 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { removeFromCart, updateQuantity, clearCart } from '@/redux/slices/cartSlice';
+import { removeLineItemApi, updateLineItemApi, clearCartApi, fetchCart } from '@/redux/slices/cartSlice';
 import { useRouter } from 'next/navigation';
 
 export default function CartView() {
@@ -11,21 +12,25 @@ export default function CartView() {
   const router = useRouter();
   const { items, total, itemCount } = useAppSelector((state) => state.cart);
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
-    dispatch(updateQuantity({ itemId, quantity: newQuantity }));
+  const handleQuantityChange = (itemId: number | string, newQuantity: number) => {
+    dispatch(updateLineItemApi({ line_item_id: itemId, quantity: newQuantity }));
   };
 
-  const handleRemoveItem = (itemId: string) => {
-    dispatch(removeFromCart(itemId));
+  const handleRemoveItem = (itemId: number | string) => {
+    dispatch(removeLineItemApi({ line_item_id: itemId }));
   };
 
   const handleClearCart = () => {
-    dispatch(clearCart());
+    dispatch(clearCartApi());
   };
 
   const handleCheckout = () => {
     router.push('/checkout');
   };
+
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
 
   if (items.length === 0) {
     return (
@@ -52,32 +57,28 @@ export default function CartView() {
                 <CardContent className="p-4">
                   <div className="flex gap-4">
                     {/* Product Image */}
-                    <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       <img
-                        src={item.product.images?.[0]?.url || '/images/placeholder.jpg'}
-                        alt={item.product.name}
+                        src={item.image_url || '/images/placeholder.jpg'}
+                        alt={item.product_name || 'product'}
                         className="w-full h-full object-cover"
                       />
                     </div>
 
                     {/* Product Info */}
                     <div className="flex-1">
-                      <h3 className="font-medium mb-2">{item.product.name}</h3>
+                      <h3 className="font-medium mb-2">{item.product_name ?? 'Product'}</h3>
 
                       <div className="text-sm text-gray-600 mb-2">
-                          {item.selectedVariant.title !== "Default Title" ? <span> {item.selectedVariant.title}</span> : <span>-</span>}
+                          {item.variant_title !== 'Default Title' ? <span>{item.variant_title}</span> : <span>-</span>}
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            {/* Show unit price from cart item (stable), fall back to selectedVariant or first variant */}
-                            <span className="font-bold text-red-600">
-                              {(item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price ?? 0).toLocaleString()}đ
-                            </span>
-                            {((item.selectedVariant?.compare_at_price ?? item.product.variants?.[0]?.compare_at_price) &&
-                             (item.selectedVariant?.compare_at_price ?? item.product.variants?.[0]?.compare_at_price) > (item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price ?? 0)) && (
+                            <span className="font-bold text-red-600">{(item.price ?? 0).toLocaleString()}đ</span>
+                            {((item.original_price ?? 0) > (item.price ?? 0)) && (
                               <span className="text-sm text-gray-400 line-through">
-                                {(item.selectedVariant?.compare_at_price ?? item.product.variants?.[0]?.compare_at_price)?.toLocaleString()}đ
+                                {(item.original_price ?? 0).toLocaleString()}đ
                               </span>
                             )}
                           </div>
@@ -87,16 +88,16 @@ export default function CartView() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
+                            onClick={() => handleQuantityChange(item.id, Math.max(1, (item.quantity ?? 0) - 1))}
+                            disabled={(item.quantity ?? 0) <= 1}
                           >
                             -
                           </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
+                          <span className="w-8 text-center">{item.quantity ?? 0}</span>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item.id, (item.quantity ?? 0) + 1)}
                           >
                             +
                           </Button>
@@ -114,7 +115,7 @@ export default function CartView() {
                       {/* Subtotal */}
                       <div className="text-right mt-2">
                         <span className="font-medium">
-                          Tổng: {((item.unitPrice ?? item.selectedVariant?.price ?? item.product.variants?.[0]?.price ?? 0) * item.quantity).toLocaleString()}đ
+                          Tổng: {(((item.price ?? 0) * (item.quantity ?? 0))).toLocaleString()}đ
                         </span>
                       </div>
                     </div>

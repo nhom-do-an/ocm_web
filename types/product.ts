@@ -1,16 +1,5 @@
 import { PaginationResponse } from "./api";
 import { Collection } from "./collection";
-
-export interface CartItem {
-  id: string;
-  product: ProductDetail;
-  quantity: number;
-  addedAt?: string;
-  // store the chosen variant object (if any) and a unit price for stable pricing
-  selectedVariant?: any;
-  unitPrice?: number;
-}
-
 // Address type - cho shipping/billing
 export interface Address {
   id: string;

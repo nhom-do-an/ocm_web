@@ -52,13 +52,15 @@ export const API_ENDPOINTS = {
     CONVERT: '/region/convert',
   },
 
+  // Cart endpoints (new non-legacy)
+  CART: {
+    BASE: '/carts',
+    ADD: '/carts/add',
+    CHANGE: '/carts/change',
+  },
+
   // Legacy endpoints for backward compatibility
   LEGACY: {
-    CART: '/cart',
-    CART_ITEMS: '/cart/items',
-    ADD_TO_CART: '/cart/add',
-    UPDATE_CART_ITEM: (itemId: string) => `/cart/items/${itemId}`,
-    REMOVE_FROM_CART: (itemId: string) => `/cart/items/${itemId}`,
     ORDERS: '/orders',
     ORDER_BY_ID: (orderId: string) => `/orders/${orderId}`,
     CREATE_ORDER: '/orders',

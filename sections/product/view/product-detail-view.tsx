@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
-import { addToCart } from "@/redux/slices/cartSlice"
+import { addToCartApi } from "@/redux/slices/cartSlice"
 import { fetchProduct } from "@/redux/slices/productsSlice"
 import { getProductPrice, getProductComparePrice, getProductImageUrl, getProductStock, getProductVariantSKU } from "@/utils/product"
 import { toast } from "react-toastify"
@@ -94,7 +94,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
       const currentVariant = currentProduct.variants && currentProduct.variants[selectedVariantIndex]
 
 
-      dispatch(addToCart({ product: currentProduct, quantity: quantity, selectedVariant: currentVariant }));
+      dispatch(addToCartApi({quantity: quantity,variant_id: currentVariant?.id }));
         toast.success('Thêm vào giỏ hàng thành công!');
     }
   }
@@ -102,7 +102,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
   const handleBuyNow = () => {
     if (currentProduct) {
       const currentVariant = currentProduct.variants && currentProduct.variants[selectedVariantIndex]
-      dispatch(addToCart({ product: currentProduct, quantity: quantity, selectedVariant: currentVariant }));
+      dispatch(addToCartApi({quantity: quantity, variant_id: currentVariant?.id }));
       toast.success('Đã thêm vào giỏ, chuyển tới thanh toán...')
       router.push('/checkout')
     }
@@ -275,7 +275,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
                   <CarouselItem key={index}>
                     <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                       <img
-                        src={image.url || "/placeholder.svg"}
+                        src={image.url || "/placeholder.jpg"}
                         alt={currentProduct.name}
                         className="w-full h-full object-cover"
                       />
@@ -305,7 +305,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
                         }`}
                       >
                         <img
-                          src={image.url || "/placeholder.svg"}
+                          src={image.url || "/placeholder.jpg"}
                           alt={`${currentProduct.name} ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
@@ -401,7 +401,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
                               >
                                 {attribute.name === 'Màu sắc' && variant?.image && (
                                   <img
-                                    src={variant.image.url || "/placeholder.svg"}
+                                    src={variant.image.url || "/placeholder.jpg"}
                                     alt={String(value)}
                                     className="w-10 h-10 object-cover rounded-full flex-shrink-0"
                                   />

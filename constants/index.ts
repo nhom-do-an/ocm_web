@@ -35,24 +35,6 @@ export const ANIMATION = {
   SLOW: 500,
 } as const;
 
-// Product filters
-export const PRODUCT_FILTERS = {
-  SORT_OPTIONS: [
-    { value: 'newest', label: 'Mới nhất' },
-    { value: 'price_asc', label: 'Giá thấp đến cao' },
-    { value: 'price_desc', label: 'Giá cao đến thấp' },
-    { value: 'name_asc', label: 'Tên A-Z' },
-    { value: 'name_desc', label: 'Tên Z-A' },
-    { value: 'best_selling', label: 'Bán chạy nhất' },
-  ],
-  PRICE_RANGES: [
-    { min: 0, max: 500000, label: 'Dưới 500.000đ' },
-    { min: 500000, max: 1000000, label: '500.000đ - 1.000.000đ' },
-    { min: 1000000, max: 2000000, label: '1.000.000đ - 2.000.000đ' },
-    { min: 2000000, max: 5000000, label: '2.000.000đ - 5.000.000đ' },
-    { min: 5000000, max: null, label: 'Trên 5.000.000đ' },
-  ],
-} as const;
 
 // Order status
 export const ORDER_STATUS = {

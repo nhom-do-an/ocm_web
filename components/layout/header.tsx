@@ -24,7 +24,7 @@ import {
 import { useAppSelector, useAppDispatch } from "@/hooks/redux"
 import { logoutUser } from '@/redux/slices/authSlice'
 import { toast } from 'react-toastify'
-import { toggleCart } from "@/redux/slices/cartSlice"
+import { toggleCart, fetchCart } from "@/redux/slices/cartSlice"
 import { NAVIGATION, CONTACT_INFO, SITE_CONFIG } from "@/constants/site"
 import DynamicNavigation from "@/components/navigation/dynamic-navigation"
 
@@ -69,6 +69,10 @@ export function Header() {
       setIsSearchOpen(false)
     }
   }
+  
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
 
   useEffect(() => {
     let mounted = true
@@ -243,7 +247,7 @@ export function Header() {
             {/* Cart */}
             <Button
               variant="outline"
-              className="relative border-red-600 text-red-600 hover:bg-red-50 bg-transparent"
+              className="relative border-red-600 text-red-600 hover:bg-red-50 bg-transparent cursor-pointer"
               onClick={handleCartToggle}
             >
               <ShoppingCart className="h-5 w-5 mr-2" />

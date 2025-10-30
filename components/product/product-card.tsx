@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppDispatch } from "@/hooks/redux";
-import { addToCart } from "@/redux/slices/cartSlice";
+import { addToCartApi } from "@/redux/slices/cartSlice";
 import { formatPrice } from "@/utils";
 import { ProductDetail } from "@/types/product";
 import {
@@ -133,7 +133,7 @@ export function ProductCard({ product, size = "md", className = "" }: ProductCar
     e.preventDefault();
     e.stopPropagation();
     const currentVariant = product.variants && product.variants[selectedVariantIndex];
-    dispatch(addToCart({ product, quantity: 1, selectedVariant: currentVariant }));
+    dispatch(addToCartApi({ quantity: 1, variant_id: currentVariant?.id }));
     toast.success("Thêm vào giỏ hàng thành công!");
   };
 
