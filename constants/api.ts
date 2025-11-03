@@ -1,7 +1,4 @@
-// API Base URL
-export const API_BASE_URL = 'https://ocm.alo123.net/api';
 
-// API Endpoints theo doc
 export const API_ENDPOINTS = {
   // Auth endpoints
   AUTH: {

@@ -1,10 +1,9 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { 
-  API_BASE_URL, 
-  HTTP_STATUS, 
-  REQUEST_HEADERS, 
+import {
+  HTTP_STATUS,
+  REQUEST_HEADERS,
   CONTENT_TYPES,
-  REQUEST_TIMEOUT 
+  REQUEST_TIMEOUT
 } from '@/constants/api';
 import { ApiResponse, ApiError } from '@/types/api';
 
@@ -49,11 +48,12 @@ export class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: API_BASE_URL,
+      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://ocm.alo123.net/api',
       timeout: REQUEST_TIMEOUT,
       headers: {
         [REQUEST_HEADERS.CONTENT_TYPE]: CONTENT_TYPES.JSON,
       },
+      withCredentials: true,
     });
 
     this.setupInterceptors();
