@@ -8,6 +8,14 @@ export const API_ENDPOINTS = {
     ME: '/admin/customers/auth/me',
   },
 
+  // Customer addresses endpoints
+  ADDRESSES: {
+    LIST: '/admin/customers/addresses',
+    CREATE: '/admin/customers/addresses',
+    UPDATE: '/admin/customers/addresses',
+    DETAIL: (id: number) => `/admin/customers/addresses/${id}`,
+  },
+
   // Products endpoints  
   PRODUCTS: {
     LIST: '/admin/products',
@@ -54,6 +62,32 @@ export const API_ENDPOINTS = {
     BASE: '/carts',
     ADD: '/carts/add',
     CHANGE: '/carts/change',
+  },
+
+  // Checkout endpoints
+  CHECKOUT: {
+    BY_CART: '/checkouts/by-cart',
+    DETAIL: (token: string) => `/checkouts/${token}`,
+    UPDATE: (token: string) => `/checkouts/${token}/update`,
+    SHIPPING_RATES: (token: string) => `/checkouts/${token}/shipping-rates`,
+    COMPLETE: (token: string) => `/checkouts/${token}/complete`,
+  },
+
+  // Orders endpoints (Customer)
+  ORDERS: {
+    LIST: '/orders',
+    DETAIL: (id: number | string) => `/orders/${id}`,
+  },
+
+  // Payment methods endpoints
+  PAYMENT_METHODS: {
+    LIST: '/admin/payment-methods',
+    DETAIL: (id: number) => `/admin/payment-methods/${id}`,
+  },
+
+  // Beneficiary accounts endpoints
+  BENEFICIARY_ACCOUNTS: {
+    LIST: '/admin/beneficiary-accounts',
   },
 
   // Legacy endpoints for backward compatibility

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { fetchProducts, setFilters } from '@/redux/slices/productsSlice';
 import { ProductGrid } from '@/components/product/product-grid';
@@ -22,11 +22,11 @@ export default function ProductsView() {
   const router = useRouter();
 
   // read query params
-  const q = searchParams.get('q') || '';
-  const page = Number(searchParams.get('page') || '1');
-  const size = Number(searchParams.get('size') || '12');
-  const sort_field = searchParams.get('sort_field') || undefined;
-  const sort_type = searchParams.get('sort_type') || undefined;
+  const q = useMemo(() => searchParams.get('q') || '', [searchParams]);
+  const page = useMemo(() => Number(searchParams.get('page') || '1'), [searchParams]);
+  const size = useMemo(() => Number(searchParams.get('size') || '12'), [searchParams]);
+  const sort_field = useMemo(() => searchParams.get('sort_field') || undefined, [searchParams]);
+  const sort_type = useMemo(() => searchParams.get('sort_type') || undefined, [searchParams]);
 
   useEffect(() => {
     const params: any = { page, size };
@@ -36,6 +36,12 @@ export default function ProductsView() {
     dispatch(fetchProducts(params));
     dispatch(setFilters({ page, size, sort_field, sort_type }));
   }, [dispatch, q, page, size, sort_field, sort_type]);
+
+  const handlePageChange = useCallback((newPage: number) => {
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    params.set('page', String(newPage));
+    router.push(`/products?${params.toString()}`);
+  }, [searchParams, router]);
 
   if (loading) {
     return (
@@ -76,32 +82,18 @@ export default function ProductsView() {
           <Pagination>
             <PaginationContent>
               <PaginationPrevious
-                onClick={() => {
-                  const prev = Math.max(1, page - 1);
-                  const params = new URLSearchParams(Array.from(searchParams.entries()));
-                  params.set('page', String(prev));
-                  router.push(`/products?${params.toString()}`);
-                }}
+                onClick={() => handlePageChange(Math.max(1, page - 1))}
                 className="mr-2"
               />
 
               <PaginationPages
                 totalPages={totalPages}
                 currentPage={page}
-                onPageClick={(p) => {
-                  const params = new URLSearchParams(Array.from(searchParams.entries()));
-                  params.set('page', String(p));
-                  router.push(`/products?${params.toString()}`);
-                }}
+                onPageClick={handlePageChange}
               />
 
               <PaginationNext
-                onClick={() => {
-                  const next = Math.min(totalPages, page + 1);
-                  const params = new URLSearchParams(Array.from(searchParams.entries()));
-                  params.set('page', String(next));
-                  router.push(`/products?${params.toString()}`);
-                }}
+                onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
                 className="ml-2"
               />
             </PaginationContent>

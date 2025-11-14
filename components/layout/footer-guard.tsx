@@ -6,7 +6,7 @@ import { Footer } from './footer'
 
 export default function FooterGuard() {
   const pathname = usePathname() || ''
-  const hideOn = ['/login', '/register']
+  const hideOn = ['/login', '/register', '/checkout']
   if (hideOn.includes(pathname)) return null
 
   return <Footer />

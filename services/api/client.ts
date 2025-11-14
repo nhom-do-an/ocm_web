@@ -48,7 +48,7 @@ export class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://ocm.alo123.net/api',
+      baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://ocm.alo123.net/api',
       timeout: REQUEST_TIMEOUT,
       headers: {
         [REQUEST_HEADERS.CONTENT_TYPE]: CONTENT_TYPES.JSON,

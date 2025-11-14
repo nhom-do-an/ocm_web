@@ -2,37 +2,62 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { removeLineItemApi, updateLineItemApi, clearCartApi, fetchCart } from '@/redux/slices/cartSlice';
 import { useRouter } from 'next/navigation';
+import { checkoutService } from '@/services/api';
+import { toast } from 'react-toastify';
 
 export default function CartView() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { items, total, itemCount } = useAppSelector((state) => state.cart);
+  const { items, total, itemCount, status } = useAppSelector((state) => state.cart);
+  const [mounted, setMounted] = React.useState(false);
 
-  const handleQuantityChange = (itemId: number | string, newQuantity: number) => {
+  const handleQuantityChange = useCallback((itemId: number | string, newQuantity: number) => {
     dispatch(updateLineItemApi({ line_item_id: itemId, quantity: newQuantity }));
-  };
+  }, [dispatch]);
 
-  const handleRemoveItem = (itemId: number | string) => {
+  const handleRemoveItem = useCallback((itemId: number | string) => {
     dispatch(removeLineItemApi({ line_item_id: itemId }));
-  };
+  }, [dispatch]);
 
-  const handleClearCart = () => {
+  const handleClearCart = useCallback(() => {
     dispatch(clearCartApi());
-  };
+  }, [dispatch]);
 
-  const handleCheckout = () => {
-    router.push('/checkout');
-  };
+  const handleCheckout = useCallback(async () => {
+    try {
+      // Gọi API để lấy checkout token từ cart
+      const checkout = await checkoutService.getCheckoutByCart({});
+      // Chuyển đến trang checkout với token
+      router.push(`/checkout?token=${checkout.token}`);
+    } catch (error: any) {
+      toast.error(error?.message || 'Không thể tạo phiên thanh toán');
+      console.error('Checkout error:', error);
+    }
+  }, [router]);
 
   useEffect(() => {
+    setMounted(true);
     dispatch(fetchCart());
   }, [dispatch]);
 
-  if (items.length === 0) {
+  // Show loading state during initial load or if not mounted (SSR)
+  if (!mounted || status === 'loading') {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Giỏ hàng của bạn</h1>
+        <div className="text-center py-12">
+          <p className="text-gray-600">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty cart only after cart has been loaded
+  if (status === 'succeeded' && items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
@@ -163,14 +188,14 @@ export default function CartView() {
                 </div>
               </div>
 
-              <Button size="lg" className="w-full mb-3" onClick={handleCheckout}>
+              <Button size="lg" className="w-full mb-3 cursor-pointer" onClick={handleCheckout}>
                 Tiến hành thanh toán
               </Button>
 
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full"
+                className="w-full cursor-pointer"
                 onClick={() => router.push('/products')}
               >
                 Tiếp tục mua sắm

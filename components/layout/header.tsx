@@ -3,11 +3,11 @@
 import type React from "react"
 
 import Link from "next/link"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useDebounce } from '@/hooks/useDebounce'
 import { productsService } from '@/services/api'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, ShoppingCart, Menu, Phone, User, Mail } from "lucide-react"
+import { Search, ShoppingCart, Menu, Phone, User, Mail, UserCircle } from "lucide-react"
 import ProductSuggestion from '@/components/product/product-suggestion'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,15 +37,44 @@ export function Header() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const dispatch = useAppDispatch()
   const cartItems = useAppSelector((state) => state.cart.items)
-  const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0)
+  const cartItemsCount = useMemo(
+    () => cartItems.reduce((total, item) => total + item.quantity, 0),
+    [cartItems]
+  )
   const { user, isAuthenticated, restored } = useAppSelector((state) => state.auth)
   const router = useRouter()
   const pathname = usePathname() || '/'
   const searchParams = useSearchParams()
   const search = searchParams ? String(searchParams) : ''
-  const currentFullPath = `${pathname}${search ? `?${search}` : ''}`
-  const loginHref = `/login?redirect=${encodeURIComponent(currentFullPath)}`
-  const registerHref = `/register?redirect=${encodeURIComponent(currentFullPath)}`
+  const currentFullPath = useMemo(
+    () => `${pathname}${search ? `?${search}` : ''}`,
+    [pathname, search]
+  )
+  const loginHref = useMemo(
+    () => `/login?redirect=${encodeURIComponent(currentFullPath)}`,
+    [currentFullPath]
+  )
+  const registerHref = useMemo(
+    () => `/register?redirect=${encodeURIComponent(currentFullPath)}`,
+    [currentFullPath]
+  )
+  
+  const displayName = useMemo(
+    () => user && (user.first_name && user.last_name 
+      ? `${user.first_name} ${user.last_name}` 
+      : (user.first_name || user.email || user.phone || '')),
+    [user]
+  )
+  
+  const handleLogout = useCallback(async () => {
+    try {
+      await dispatch(logoutUser() as any)
+      toast.info('Đã đăng xuất')
+      router.push('/')
+    } catch (err) {
+      console.error(err)
+    }
+  }, [dispatch, router])
 
   useEffect(() => {
     const handleResize = () => {
@@ -58,17 +87,17 @@ export function Header() {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  const handleCartToggle = () => {
+  const handleCartToggle = useCallback(() => {
     dispatch(toggleCart())
-  }
+  }, [dispatch])
 
-  const handleSearch = (e?: React.FormEvent) => {
+  const handleSearch = useCallback((e?: React.FormEvent) => {
     if (e) e.preventDefault()
     if (searchQuery.trim()) {
       router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`)
       setIsSearchOpen(false)
     }
-  }
+  }, [searchQuery, router])
   
   useEffect(() => {
     dispatch(fetchCart());
@@ -135,30 +164,30 @@ export function Header() {
             </div>
             <div className="flex items-center gap-4">
               {restored === false ? null : isAuthenticated && user ? (
-                (() => {
-                  const displayName = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.email || user.phone || '')
-                  return (
-                    <div className="flex items-center gap-3">
-                      <div className="text-sm">
-                        Xin chào, <span className="font-semibold">{displayName}</span>
-                      </div>
-                      <button
-                        onClick={async () => {
-                          try {
-                            await dispatch(logoutUser() as any)
-                            toast.info('Đã đăng xuất')
-                            router.push('/')
-                          } catch (err) {
-                            console.error(err)
-                          }
-                        }}
-                        className="text-sm text-red-600 hover:underline"
-                      >
-                        Đăng xuất
-                      </button>
-                    </div>
-                  )
-                })()
+                <div className="flex items-center gap-3">
+                  <Link 
+                    href="/account" 
+                    className="flex items-center gap-2 text-sm hover:text-red-600 transition-colors group"
+                  >
+                    <UserCircle className="h-4 w-4 flex-shrink-0 group-hover:text-red-600 transition-colors" />
+                    <span className="hidden sm:inline">
+                      Xin chào, <span className="font-semibold">{displayName}</span>
+                    </span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm text-red-600 hover:underline hidden sm:inline"
+                  >
+                    Đăng xuất
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="text-xs text-red-600 hover:underline sm:hidden"
+                    title="Đăng xuất"
+                  >
+                    Thoát
+                  </button>
+                </div>
               ) : (
                 <>
                   <Link href={loginHref} className="flex items-center gap-1 hover:text-red-600 transition-colors">
@@ -307,18 +336,25 @@ export function Header() {
                       (item) =>
                         item.name !== "Sản phẩm" && item.name !== "Trang chủ" && item.name !== "Tất cả sản phẩm",
                     )
-                    .map((item) => (
-                      <NavigationMenuItem key={item.name}>
-                        <NavigationMenuLink asChild>
-                          <Link
-                            href={item.href}
-                            className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium !text-white hover:!bg-red-700 hover:!text-white focus:!text-white transition-colors"
-                          >
-                            {item.name}
-                          </Link>
-                        </NavigationMenuLink>
-                      </NavigationMenuItem>
-                    ))}
+                    .map((item) => {
+                      const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                      return (
+                        <NavigationMenuItem key={item.name}>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              href={item.href}
+                              className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                                isActive
+                                  ? '!bg-red-800 !text-white'
+                                  : '!text-white hover:!bg-red-700 hover:!text-white focus:!text-white'
+                              }`}
+                            >
+                              {item.name}
+                            </Link>
+                          </NavigationMenuLink>
+                        </NavigationMenuItem>
+                      )
+                    })}
                 </NavigationMenuList>
               </NavigationMenu>
             </div>
@@ -340,15 +376,21 @@ export function Header() {
                     <div className="space-y-2 py-6">
                       {NAVIGATION.main
                         .filter((item) => item.name !== "Sản phẩm")
-                        .map((item) => (
-                          <div key={item.name}>
-                            <Link
-                              href={item.href}
-                              className="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                              onClick={() => setIsMobileNavOpen(false)}
-                            >
-                              {item.name}
-                            </Link>
+                        .map((item) => {
+                          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+                          return (
+                            <div key={item.name}>
+                              <Link
+                                href={item.href}
+                                className={`block rounded-lg px-3 py-2 text-base font-semibold leading-7 transition-colors ${
+                                  isActive
+                                    ? 'bg-red-50 text-red-600'
+                                    : 'text-gray-900 hover:bg-gray-50'
+                                }`}
+                                onClick={() => setIsMobileNavOpen(false)}
+                              >
+                                {item.name}
+                              </Link>
                             {item.name === "Tất cả sản phẩm" && (
                               <div className="ml-4 space-y-1">
                                 <DynamicNavigation
@@ -359,8 +401,9 @@ export function Header() {
                                 />
                               </div>
                             )}
-                          </div>
-                        ))}
+                            </div>
+                          )
+                        })}
                     </div>
                   </div>
                 </SheetContent>

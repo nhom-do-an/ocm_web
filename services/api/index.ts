@@ -9,3 +9,7 @@ export { regionsService } from './regions';
 export { fileService, FileService } from './files';
 export { cartService } from './cart';
 export { orderService } from './orders';
+export { addressService, AddressService } from './addresses';
+export { checkoutService, CheckoutService } from './checkout';
+export { paymentMethodsService, PaymentMethodsService } from './payment-methods';
+export { beneficiaryAccountsService, BeneficiaryAccountsService } from './beneficiary-accounts';

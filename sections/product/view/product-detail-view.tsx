@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -89,26 +89,24 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
     }
   }, [currentProduct, mainCarouselApi])
 
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(() => {
     if (currentProduct) {
       const currentVariant = currentProduct.variants && currentProduct.variants[selectedVariantIndex]
-
-
       dispatch(addToCartApi({quantity: quantity,variant_id: currentVariant?.id }));
-        toast.success('Thêm vào giỏ hàng thành công!');
+      toast.success('Thêm vào giỏ hàng thành công!');
     }
-  }
+  }, [currentProduct, selectedVariantIndex, quantity, dispatch])
 
-  const handleBuyNow = () => {
+  const handleBuyNow = useCallback(() => {
     if (currentProduct) {
       const currentVariant = currentProduct.variants && currentProduct.variants[selectedVariantIndex]
       dispatch(addToCartApi({quantity: quantity, variant_id: currentVariant?.id }));
       toast.success('Đã thêm vào giỏ, chuyển tới thanh toán...')
       router.push('/checkout')
     }
-  }
+  }, [currentProduct, selectedVariantIndex, quantity, dispatch, router])
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href)
       toast.success('Sao chép liên kết thành công!')
@@ -116,9 +114,9 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
       console.error('copy failed', err)
       toast.error('Không thể sao chép liên kết')
     }
-  }
+  }, [])
 
-  const handleShareFacebook = () => {
+  const handleShareFacebook = useCallback(() => {
     try {
       const url = encodeURIComponent(window.location.href)
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'noopener,noreferrer')
@@ -126,9 +124,9 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
       console.error('share fb failed', err)
       toast.error('Không thể chia sẻ lên Facebook')
     }
-  }
+  }, [])
 
-  const handleVariantChange = (attributeName: string, value: string) => {
+  const handleVariantChange = useCallback((attributeName: string, value: string) => {
     const attrIndex = currentProduct?.attributes?.findIndex((a) => a.name === attributeName) ?? -1
     const pos = attrIndex + 1
 
@@ -156,7 +154,105 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
         setSelectedVariantIndex(matchedIndex)
       }
     }
-  }
+  }, [currentProduct, selectedVariantIndex, mainCarouselApi])
+
+  // All hooks must be called before any early returns
+  const price = useMemo(
+    () => currentProduct ? getProductPrice(currentProduct, selectedVariantIndex) : 0,
+    [currentProduct, selectedVariantIndex]
+  )
+  
+  const comparePrice = useMemo(
+    () => currentProduct ? getProductComparePrice(currentProduct, selectedVariantIndex) : null,
+    [currentProduct, selectedVariantIndex]
+  )
+  
+  const stock = useMemo(
+    () => currentProduct ? getProductStock(currentProduct, selectedVariantIndex) : 0,
+    [currentProduct, selectedVariantIndex]
+  )
+  
+  const sku = useMemo(
+    () => currentProduct ? getProductVariantSKU(currentProduct, selectedVariantIndex) : '',
+    [currentProduct, selectedVariantIndex]
+  )
+  
+  const isInStock = useMemo(() => stock > 0, [stock])
+  
+  const discountPercentage = useMemo(
+    () => typeof comparePrice === 'number' && comparePrice > price
+      ? Math.round(((comparePrice - price) / comparePrice) * 100)
+      : null,
+    [comparePrice, price]
+  )
+
+  const activeVariant = useMemo(
+    () => currentProduct?.variants && currentProduct.variants[selectedVariantIndex],
+    [currentProduct, selectedVariantIndex]
+  )
+
+  const sortedAttributes = useMemo(
+    () => currentProduct?.attributes
+      ? [...currentProduct.attributes].sort((a, b) => a.position - b.position)
+      : [],
+    [currentProduct]
+  )
+
+  const validVariants = useMemo(
+    () => currentProduct?.variants?.filter((v) => v.title !== "Default Title") ?? [],
+    [currentProduct]
+  )
+
+  const variantsByAttribute = useMemo(
+    () => sortedAttributes.map((attr, attrIndex) => {
+      const optionKey = `option${attrIndex + 1}` as keyof (typeof validVariants)[0]
+      const uniqueValues = Array.from(new Set(validVariants.map((v) => v[optionKey]).filter(Boolean)))
+      return {
+        attribute: attr,
+        values: uniqueValues,
+      }
+    }),
+    [sortedAttributes, validVariants]
+  )
+
+  const hasValidVariants = useMemo(
+    () => variantsByAttribute.some((attr) => attr.values.length > 0) && !sortedAttributes.some((attr) => attr.name === "Title"),
+    [variantsByAttribute, sortedAttributes]
+  )
+
+  const primaryCollection = useMemo(
+    () => (currentProduct as any)?.collections && (currentProduct as any).collections.length > 0
+      ? (currentProduct as any).collections[0]
+      : null,
+    [currentProduct]
+  )
+
+  const { contentHtml, specHtml } = useMemo(() => {
+    const rawContent = currentProduct?.content ?? ''
+    let content = rawContent
+    let spec = ''
+
+    try {
+      // Find a heading that contains the phrase "Thông số" (covers "Thông số kỹ thuật", "Thông số kĩ thuật", etc.)
+      const specHeadingRegex = /<h[1-6][^>]*>[\s\S]*?Thông\s*số[\s\S]*?<\/h[1-6]>/i
+      const specHeadingMatch = specHeadingRegex.exec(rawContent)
+      if (specHeadingMatch && typeof specHeadingMatch.index === 'number') {
+        const startIdx = specHeadingMatch.index
+        const endIdx = startIdx + specHeadingMatch[0].length
+        content = rawContent.slice(0, startIdx).trim()
+
+        const afterHeading = rawContent.slice(endIdx)
+        const nextHeadingMatch = afterHeading.match(/<h[1-6][^>]*>/i)
+        const specEndRelative = nextHeadingMatch && typeof nextHeadingMatch.index === 'number' ? nextHeadingMatch.index : afterHeading.length
+        spec = afterHeading.slice(0, specEndRelative).trim()
+      }
+    } catch (err) {
+      content = rawContent
+      spec = ''
+    }
+    
+    return { contentHtml: content, specHtml: spec }
+  }, [currentProduct])
 
   if (loading) {
     return (
@@ -175,61 +271,6 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
         </div>
       </div>
     )
-  }
-
-  const price = getProductPrice(currentProduct, selectedVariantIndex)
-  const comparePrice = getProductComparePrice(currentProduct, selectedVariantIndex)
-  const stock = getProductStock(currentProduct, selectedVariantIndex)
-  const sku = getProductVariantSKU(currentProduct, selectedVariantIndex)
-  const isInStock = stock > 0
-  const discountPercentage = typeof comparePrice === 'number' && comparePrice > price
-    ? Math.round(((comparePrice - price) / comparePrice) * 100)
-    : null
-
-  const activeVariant = currentProduct.variants && currentProduct.variants[selectedVariantIndex]
-
-  const sortedAttributes = currentProduct.attributes
-    ? [...currentProduct.attributes].sort((a, b) => a.position - b.position)
-    : []
-
-  const validVariants = currentProduct.variants?.filter((v) => v.title !== "Default Title") ?? []
-
-  const variantsByAttribute = sortedAttributes.map((attr, attrIndex) => {
-    const optionKey = `option${attrIndex + 1}` as keyof (typeof validVariants)[0]
-    const uniqueValues = Array.from(new Set(validVariants.map((v) => v[optionKey]).filter(Boolean)))
-    return {
-      attribute: attr,
-      values: uniqueValues,
-    }
-  })
-
-  const hasValidVariants = variantsByAttribute.some((attr) => attr.values.length > 0) && !sortedAttributes.some((attr) => attr.name === "Title")
-
-  const primaryCollection = (currentProduct as any).collections && (currentProduct as any).collections.length > 0
-    ? (currentProduct as any).collections[0]
-    : null
-
-  const rawContent = currentProduct.content ?? ''
-  let contentHtml = rawContent
-  let specHtml = ''
-
-  try {
-    // Find a heading that contains the phrase "Thông số" (covers "Thông số kỹ thuật", "Thông số kĩ thuật", etc.)
-    const specHeadingRegex = /<h[1-6][^>]*>[\s\S]*?Thông\s*số[\s\S]*?<\/h[1-6]>/i
-    const specHeadingMatch = specHeadingRegex.exec(rawContent)
-    if (specHeadingMatch && typeof specHeadingMatch.index === 'number') {
-      const startIdx = specHeadingMatch.index
-      const endIdx = startIdx + specHeadingMatch[0].length
-      contentHtml = rawContent.slice(0, startIdx).trim()
-
-      const afterHeading = rawContent.slice(endIdx)
-      const nextHeadingMatch = afterHeading.match(/<h[1-6][^>]*>/i)
-      const specEndRelative = nextHeadingMatch && typeof nextHeadingMatch.index === 'number' ? nextHeadingMatch.index : afterHeading.length
-      specHtml = afterHeading.slice(0, specEndRelative).trim()
-    }
-  } catch (err) {
-    contentHtml = rawContent
-    specHtml = ''
   }
 
   return (

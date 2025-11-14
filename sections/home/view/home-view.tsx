@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { CollectionGrid } from '@/components/home/collection-grid';
 import { BannerSlider } from '@/components/home/banner-slider';
 import { ServiceBenefits } from '@/components/home/service-benefits';
@@ -14,16 +14,10 @@ import { ProductGrid } from '@/components/product/product-grid';
 export default function HomeView() {
   const dispatch = useAppDispatch();
   const { products, loading } = useAppSelector((state) => state.products);
-  const [featuredProducts, setFeaturedProducts] = useState<ProductDetail[]>([]);
   const [collections, setCollections] = useState<CollectionDetail[]>([]);
   const [collectionsLoading, setCollectionsLoading] = useState(true);
 
-  useEffect(() => {
-    dispatch(fetchProducts({ size: 12, sort_field: 'created_at', sort_type: 'asc' }));
-    fetchCollections();
-  }, [dispatch]);
-
-  const fetchCollections = async () => {
+  const fetchCollections = useCallback(async () => {
     try {
       setCollectionsLoading(true);
       const response = await collectionsService.getCollections({ page: 1, size: 100 });
@@ -35,12 +29,17 @@ export default function HomeView() {
     } finally {
       setCollectionsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const featured = products.slice(0, 8);
-    setFeaturedProducts(featured);
-  }, [products]);
+    dispatch(fetchProducts({ size: 12, sort_field: 'created_at', sort_type: 'asc' }));
+    fetchCollections();
+  }, [dispatch, fetchCollections]);
+
+  const featuredProducts = useMemo(
+    () => products.slice(0, 8),
+    [products]
+  );
 
 
   if (loading) {
@@ -52,7 +51,7 @@ export default function HomeView() {
   }
 
   return (
-    <div>
+    <div className="bg-gray-50">
       {/* Banner Slider */}
       <section className="container mx-auto py-4">
         <BannerSlider />
@@ -64,19 +63,19 @@ export default function HomeView() {
       <div className="container mx-auto px-4 py-8">
         {/* Featured Products */}
         <section className="mb-12">
-          <div className="bg-red-600 text-white p-4 mb-6">
-            <h2 className="text-2xl font-bold text-center">SẢN PHẨM BÁN CHẠY</h2>
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">SẢN PHẨM BÁN CHẠY</h2>
+            <ProductGrid products={featuredProducts} className="gap-6" />
           </div>
-        <ProductGrid products={featuredProducts} className="gap-6" />
         </section>
 
         {/* Featured Collections */}
         {!collectionsLoading && collections.length > 0 && (
           <section className="mb-12">
-            <div className="bg-red-600 text-white p-4 mb-6">
-              <h2 className="text-2xl font-bold text-center">DANH MỤC NỔI BẬT</h2>
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">DANH MỤC NỔI BẬT</h2>
+              <CollectionGrid collections={collections} />
             </div>
-            <CollectionGrid collections={collections} />
           </section>
         )}
       </div>

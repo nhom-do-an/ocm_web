@@ -1,19 +1,33 @@
 "use client"
 
+import { memo, useMemo } from 'react'
 import Link from 'next/link'
 import { ProductDetail } from '@/types/product'
-import React from 'react'
 
 interface Props {
   product: ProductDetail
 }
 
-export function ProductSuggestion({ product }: Props) {
-  const image = product.images?.[0]?.url || '/images/placeholder.jpg'
-  const price = product.variants?.[0]?.price ?? 0
-  const compare = product.variants?.[0]?.compare_at_price ?? 0
+function ProductSuggestionComponent({ product }: Props) {
+  const image = useMemo(
+    () => product.images?.[0]?.url || '/images/placeholder.jpg',
+    [product.images]
+  );
+  
+  const price = useMemo(
+    () => product.variants?.[0]?.price ?? 0,
+    [product.variants]
+  );
+  
+  const compare = useMemo(
+    () => product.variants?.[0]?.compare_at_price ?? 0,
+    [product.variants]
+  );
 
-  const fmt = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v)
+  const fmt = useMemo(
+    () => (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v),
+    []
+  )
 
   return (
     <div className="flex items-center gap-3">
@@ -34,4 +48,5 @@ export function ProductSuggestion({ product }: Props) {
   )
 }
 
+export const ProductSuggestion = memo(ProductSuggestionComponent);
 export default ProductSuggestion

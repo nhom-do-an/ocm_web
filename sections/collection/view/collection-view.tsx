@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { notFound } from 'next/navigation';
 import { Home, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -210,6 +210,30 @@ export default function CollectionView({ alias }: CollectionViewProps) {
     window.history.replaceState(null, '', newUrl);
   };
 
+  // All hooks must be called before any early returns
+  const sortedProducts = useMemo(() => {
+    return [...products].sort((a, b) => {
+      switch (sortBy) {
+        case 'price-asc':
+          const priceA = a.variants?.[0]?.price || 0;
+          const priceB = b.variants?.[0]?.price || 0;
+          return priceA - priceB;
+        case 'price-desc':
+          const priceA2 = a.variants?.[0]?.price || 0;
+          const priceB2 = b.variants?.[0]?.price || 0;
+          return priceB2 - priceA2;
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        default:
+          return 0;
+      }
+    });
+  }, [products, sortBy]);
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -223,27 +247,6 @@ export default function CollectionView({ alias }: CollectionViewProps) {
   if (!collection) {
     notFound();
   }
-
-  const sortedProducts = [...products].sort((a, b) => {
-    switch (sortBy) {
-      case 'price-asc':
-        const priceA = a.variants?.[0]?.price || 0;
-        const priceB = b.variants?.[0]?.price || 0;
-        return priceA - priceB;
-      case 'price-desc':
-        const priceA2 = a.variants?.[0]?.price || 0;
-        const priceB2 = b.variants?.[0]?.price || 0;
-        return priceB2 - priceA2;
-      case 'name-asc':
-        return a.name.localeCompare(b.name);
-      case 'name-desc':
-        return b.name.localeCompare(a.name);
-      case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      default:
-        return 0;
-    }
-  });
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -1,26 +1,33 @@
 'use client';
 
+import Link from 'next/link';
+import UserAuthForm from '@/sections/auth/user-auth-form';
+
 interface AuthViewProps {
   form_type: string; // e.g., 'login' or 'register'
 }
 
-import UserAuthForm from '@/sections/auth/user-auth-form'
-
 const AuthView: React.FC<AuthViewProps> = ({ form_type }) => {
-  return (
-    <div className="min-h-[70vh] flex items-center justify-center">
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow-md overflow-hidden grid grid-cols-1 lg:grid-cols-2">
-        <div className="hidden lg:flex flex-col items-center justify-center bg-red-600 text-white p-8">
-          <h2 className="text-2xl font-bold mb-2">Chào mừng đến với OCM</h2>
-          <p className="text-sm opacity-90">Mua sắm thông minh — giá tốt mỗi ngày.</p>
-        </div>
+  const isRegister = form_type === 'register';
 
-        <div className="p-6">
-          <UserAuthForm type={form_type === 'register' ? 'register' : 'login'} />
+  return (
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-rose-50 via-white to-amber-50">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl items-center px-4 py-12 lg:px-8">
+        <div className="w-full">
+          <div className="mx-auto max-w-2xl">
+            <div className="mb-6 text-center">
+              <Link href="/" className="inline-block text-2xl font-bold text-red-600 hover:text-red-700">
+                OCM Store
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-gray-100 bg-white/95 p-8 shadow-xl backdrop-blur sm:p-10">
+              <UserAuthForm type={isRegister ? 'register' : 'login'} />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
+    </section>
+  );
+};
 
 export default AuthView;

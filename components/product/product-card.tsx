@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,24 +24,40 @@ interface ProductCardProps {
   className?: string;
 }
 
-export function ProductCard({ product, size = "md", className = "" }: ProductCardProps) {
+const SIZE_CLASSES = {
+  sm: {
+    img: "aspect-square",
+    title: "text-sm",
+    price: "text-base",
+    badge: "text-xs",
+    card: "p-0",
+  },
+  md: {
+    img: "aspect-square",
+    title: "text-sm",
+    price: "text-lg",
+    badge: "text-sm",
+    card: "p-0",
+  },
+  lg: {
+    img: "aspect-square",
+    title: "text-base",
+    price: "text-2xl",
+    badge: "text-sm",
+    card: "p-0",
+  },
+} as const;
+
+function ProductCardComponent({ product, size = "md", className = "" }: ProductCardProps) {
   const dispatch = useAppDispatch();
 
   const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
   const [userSelectedVariant, setUserSelectedVariant] = useState<boolean>(false);
   const [isHover, setIsHover] = useState(false);
 
-  const price = getProductPrice(product, selectedVariantIndex);
-  const comparePrice = getProductComparePrice(product, selectedVariantIndex);
-  const imageUrl = getProductImageUrl(product, selectedVariantIndex);
-  const discountPercentage =
-    comparePrice && price ? Math.round(((comparePrice - price) / comparePrice) * 100) : null;
-  const stock = getProductStock(product, selectedVariantIndex);
-  const isInStock = stock > 0;
+  const productImages = useMemo(() => product.images ?? [], [product.images]);
 
-  const productImages = product.images ?? [];
-
-  const getVariantImageUrl = (variant: any) => {
+  const getVariantImageUrl = useCallback((variant: any) => {
     if (!variant) return undefined;
     if (variant.image?.url) return variant.image.url;
     if (typeof variant.image === "string") return variant.image;
@@ -50,108 +66,136 @@ export function ProductCard({ product, size = "md", className = "" }: ProductCar
       return found?.url;
     }
     return undefined;
-  };
+  }, [productImages]);
 
-  const hasColorAttribute = product.attributes.some((attr) => attr.name === "Màu sắc");
-  let variants: any[] = [];
-  if (hasColorAttribute) {
+  const hasColorAttribute = useMemo(
+    () => product.attributes.some((attr) => attr.name === "Màu sắc"),
+    [product.attributes]
+  );
+
+  const variants = useMemo(() => {
+    if (!hasColorAttribute) return [];
     const colorAttribute = product.attributes.find((attr) => attr.name === "Màu sắc");
-    colorAttribute?.values.forEach((colorValue: any) => {
+    if (!colorAttribute) return [];
+    
+    const variantList: any[] = [];
+    colorAttribute.values.forEach((colorValue: any) => {
       const variant = product.variants.find(
         (v: any) => v[`option${colorAttribute.position}`] === colorValue && v.inventory_quantity > 0
       );
-      variants.push(
+      variantList.push(
         variant || product.variants.find((v: any) => v[`option${colorAttribute.position}`] === colorValue)
       );
     });
-  }
+    return variantList;
+  }, [hasColorAttribute, product.attributes, product.variants]);
 
-  const selectedVariantUrl =
-    product.variants && product.variants[selectedVariantIndex]
-      ? getVariantImageUrl(product.variants[selectedVariantIndex])
-      : null;
+  const currentVariant = useMemo(
+    () => product.variants?.[selectedVariantIndex],
+    [product.variants, selectedVariantIndex]
+  );
 
-  const findImageIndexById = (id?: string | number | null) => {
-    if (id == null) return -1;
-    return productImages.findIndex((img: any) => String(img.id) === String(id));
-  };
-  const currentVariant = product.variants && product.variants[selectedVariantIndex];
-  let variantImageIndex = -1;
-  if (hasColorAttribute && currentVariant) {
+  const variantImageIndex = useMemo(() => {
+    if (!hasColorAttribute || !currentVariant) return -1;
+    
     if (currentVariant.image_id) {
-      variantImageIndex = findImageIndexById(currentVariant.image_id);
+      const id = currentVariant.image_id;
+      return productImages.findIndex((img: any) => String(img.id) === String(id));
     }
-    if (variantImageIndex < 0) {
-      const url = getVariantImageUrl(currentVariant as any);
-      if (url) {
-        variantImageIndex = productImages.findIndex((img: any) => String(img.url) === String(url));
-      }
+    
+    const url = getVariantImageUrl(currentVariant);
+    if (url) {
+      return productImages.findIndex((img: any) => String(img.url) === String(url));
     }
-  }
+    return -1;
+  }, [hasColorAttribute, currentVariant, productImages, getVariantImageUrl]);
 
-  const mainImage1 =
-    variantImageIndex >= 0 ? productImages[variantImageIndex]?.url : productImages?.[0]?.url || imageUrl;
-  const mainImage2 =
-    variantImageIndex >= 0 ? productImages[variantImageIndex + 1]?.url || null : productImages?.[1]?.url || null;
+  const mainImage1 = useMemo(
+    () => variantImageIndex >= 0 ? productImages[variantImageIndex]?.url : productImages?.[0]?.url || getProductImageUrl(product, selectedVariantIndex),
+    [variantImageIndex, productImages, product, selectedVariantIndex]
+  );
 
-  let displayedImage: string | null;
-  if (userSelectedVariant && selectedVariantUrl) {
-    displayedImage = selectedVariantUrl;
-  } else {
-    displayedImage = isHover && mainImage2 ? mainImage2 : mainImage1;
-  }
+  const mainImage2 = useMemo(
+    () => variantImageIndex >= 0 ? productImages[variantImageIndex + 1]?.url || null : productImages?.[1]?.url || null,
+    [variantImageIndex, productImages]
+  );
 
-  const cardSize = size as ("sm" | "md" | "lg") | undefined;
+  const selectedVariantUrl = useMemo(
+    () => currentVariant ? getVariantImageUrl(currentVariant) : null,
+    [currentVariant, getVariantImageUrl]
+  );
 
-  const sizeClasses = {
-    sm: {
-      img: "aspect-square",
-      title: "text-sm",
-      price: "text-base",
-      badge: "text-xs",
-      card: "p-0",
-    },
-    md: {
-      img: "aspect-square",
-      title: "text-sm",
-      price: "text-lg",
-      badge: "text-sm",
-      card: "p-0",
-    },
-    lg: {
-      img: "aspect-square",
-      title: "text-base",
-      price: "text-2xl",
-      badge: "text-sm",
-      card: "p-0",
-    },
-  };
+  const price = useMemo(
+    () => getProductPrice(product, selectedVariantIndex),
+    [product, selectedVariantIndex]
+  );
 
-  const sz = cardSize || "md";
+  const comparePrice = useMemo(
+    () => getProductComparePrice(product, selectedVariantIndex),
+    [product, selectedVariantIndex]
+  );
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const discountPercentage = useMemo(
+    () => comparePrice && price ? Math.round(((comparePrice - price) / comparePrice) * 100) : null,
+    [comparePrice, price]
+  );
+
+  const stock = useMemo(
+    () => getProductStock(product, selectedVariantIndex),
+    [product, selectedVariantIndex]
+  );
+
+  const isInStock = useMemo(() => stock > 0, [stock]);
+
+  const sz = size || "md";
+  const sizeClasses = SIZE_CLASSES[sz];
+
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const currentVariant = product.variants && product.variants[selectedVariantIndex];
+    const currentVariant = product.variants?.[selectedVariantIndex];
     dispatch(addToCartApi({ quantity: 1, variant_id: currentVariant?.id }));
     toast.success("Thêm vào giỏ hàng thành công!");
-  };
+  }, [dispatch, product.variants, selectedVariantIndex]);
+
+  const handleVariantSelect = useCallback((realIndex: number) => {
+    setSelectedVariantIndex(realIndex);
+    setUserSelectedVariant(true);
+  }, []);
+
+  const handleMouseEnter = useCallback(() => setIsHover(true), []);
+  const handleMouseLeave = useCallback(() => setIsHover(false), []);
 
   return (
-    <Card className={`overflow-hidden transition-all duration-300 ${sizeClasses[sz].card} ${className}`}>
+    <Card className={`overflow-hidden transition-all duration-300 ${sizeClasses.card} ${className}`}>
       <div className="relative">
         {/* Product Image*/}
         <div
-          className={`relative ${sizeClasses[sz].img} overflow-hidden group`}
-          onMouseEnter={() => setIsHover(true)}
-          onMouseLeave={() => setIsHover(false)}
+          className={`relative ${sizeClasses.img} overflow-hidden group`}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
-          <Link href={`/product/${product.alias}`} className="block">
+          <Link href={`/product/${product.alias}`} className="block relative w-full h-full overflow-hidden">
+            {/* Main Image */}
             <img
-              src={displayedImage || imageUrl}
+              src={userSelectedVariant && selectedVariantUrl ? selectedVariantUrl : mainImage1}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+              className={`w-full h-full object-cover transition-all duration-300 cursor-pointer ${
+                isHover && mainImage2 && !userSelectedVariant ? 'opacity-0 absolute inset-0 scale-100' : 'opacity-100 group-hover:scale-105'
+              }`}
+              loading="lazy"
             />
+            {/* Second Image on Hover - Preloaded (rendered in DOM to preload) */}
+            {mainImage2 && !userSelectedVariant && (
+              <img
+                src={mainImage2}
+                alt={product.name}
+                className={`w-full h-full object-cover transition-all duration-300 cursor-pointer absolute inset-0 ${
+                  isHover ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
+                }`}
+                loading="eager"
+              />
+            )}
           </Link>
 
           {/* Discount Badge */}
@@ -221,8 +265,7 @@ export function ProductCard({ product, size = "md", className = "" }: ProductCar
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setSelectedVariantIndex(realIndex);
-                        setUserSelectedVariant(true);
+                        handleVariantSelect(realIndex);
                       }}
                       className={`w-6 h-6 rounded-full overflow-hidden border ${isSelected ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-200'} p-0`}
                     >
@@ -240,3 +283,5 @@ export function ProductCard({ product, size = "md", className = "" }: ProductCar
     </Card>
   );
 }
+
+export const ProductCard = memo(ProductCardComponent);

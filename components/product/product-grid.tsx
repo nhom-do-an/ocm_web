@@ -1,4 +1,4 @@
-
+import { memo } from 'react';
 import { ProductDetail } from '@/types/product';
 import { ProductCard } from './product-card';
 
@@ -7,7 +7,7 @@ interface ProductGridProps {
   className?: string;
 }
 
-export function ProductGrid({ products, className = '' }: ProductGridProps) {
+function ProductGridComponent({ products, className = '' }: ProductGridProps) {
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
@@ -29,3 +29,5 @@ export function ProductGrid({ products, className = '' }: ProductGridProps) {
     </div>
   );
 }
+
+export const ProductGrid = memo(ProductGridComponent);
