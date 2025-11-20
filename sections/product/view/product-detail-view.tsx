@@ -15,6 +15,7 @@ import { FaLink } from "react-icons/fa";
 import { FaFacebookF } from 'react-icons/fa'
 import { BsCart4 } from "react-icons/bs";
 import { Home } from 'lucide-react'
+import { startCheckoutFromCart } from '@/lib/checkout'
 
 interface CollectionViewProps {
   alias: string
@@ -97,12 +98,17 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
     }
   }, [currentProduct, selectedVariantIndex, quantity, dispatch])
 
-  const handleBuyNow = useCallback(() => {
-    if (currentProduct) {
-      const currentVariant = currentProduct.variants && currentProduct.variants[selectedVariantIndex]
-      dispatch(addToCartApi({quantity: quantity, variant_id: currentVariant?.id }));
-      toast.success('Đã thêm vào giỏ, chuyển tới thanh toán...')
-      router.push('/checkout')
+  const handleBuyNow = useCallback(async () => {
+    if (!currentProduct) {
+      return;
+    }
+    const currentVariant = currentProduct.variants && currentProduct.variants[selectedVariantIndex];
+    try {
+      await dispatch(addToCartApi({ quantity, variant_id: currentVariant?.id })).unwrap();
+      toast.success('Đã thêm vào giỏ, chuyển tới thanh toán...');
+      await startCheckoutFromCart(router);
+    } catch (error: any) {
+      toast.error(error?.message || 'Không thể mua ngay, vui lòng thử lại');
     }
   }, [currentProduct, selectedVariantIndex, quantity, dispatch, router])
 

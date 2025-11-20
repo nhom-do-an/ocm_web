@@ -8,6 +8,14 @@ import { ArrowLeft, Package, Eye, Loader2 } from 'lucide-react';
 import { orderService } from '@/services/api';
 import { Order, OrderStatus, FinancialStatus, FulfillmentStatus } from '@/types/api';
 import { toast } from 'react-toastify';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationPages,
+} from '@/components/ui/pagination';
 
 interface OrderHistoryTabProps {
   onBack: () => void;
@@ -167,29 +175,43 @@ export default function OrderHistoryTab({ onBack }: OrderHistoryTabProps) {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1 || loading}
-                  className="cursor-pointer"
-                >
-                  Trước
-                </Button>
-                <span className="text-sm text-gray-600">
-                  Trang {page} / {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages || loading}
-                  className="cursor-pointer"
-                >
-                  Sau
-                </Button>
-              </div>
+              <Pagination className="mt-6">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      aria-disabled={page === 1 || loading}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (page > 1 && !loading) {
+                          setPage((prev) => prev - 1);
+                        }
+                      }}
+                    />
+                  </PaginationItem>
+
+                  <PaginationPages
+                    totalPages={totalPages}
+                    currentPage={page}
+                    onPageClick={(newPage) => {
+                      if (newPage !== page && !loading) {
+                        setPage(newPage);
+                      }
+                    }}
+                  />
+
+                  <PaginationItem>
+                    <PaginationNext
+                      aria-disabled={page === totalPages || loading}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (page < totalPages && !loading) {
+                          setPage((prev) => prev + 1);
+                        }
+                      }}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             )}
           </>
         )}

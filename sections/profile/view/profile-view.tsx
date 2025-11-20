@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { logoutUser } from '@/redux/slices/authSlice';
 import { toast } from 'react-toastify';
@@ -17,16 +17,46 @@ type TabType = 'account' | 'addresses' | 'password' | 'logout';
 
 export default function ProfileView() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, restored } = useAppSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState<TabType>('account');
   const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [initializedFromQuery, setInitializedFromQuery] = useState(false);
 
   useEffect(() => {
+    if (!restored) {
+      return;
+    }
     if (!isAuthenticated || !user) {
       router.push('/login?redirect=/account');
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, restored]);
+
+  useEffect(() => {
+    if (!restored || !isAuthenticated || !user || initializedFromQuery) {
+      return;
+    }
+
+    const tabParam = searchParams?.get('tab') as TabType | null;
+    if (tabParam && ['account', 'addresses', 'password'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+
+    const viewParam = searchParams?.get('view');
+    if (viewParam === 'orders') {
+      setShowOrderHistory(true);
+    }
+
+    setInitializedFromQuery(true);
+  }, [searchParams, initializedFromQuery, isAuthenticated, user]);
+
+  const tabs = [
+    { id: 'account' as TabType, label: 'Thông tin tài khoản', icon: User },
+    { id: 'addresses' as TabType, label: 'Quản lý địa chỉ', icon: MapPin },
+    { id: 'password' as TabType, label: 'Đổi mật khẩu', icon: Lock },
+    { id: 'logout' as TabType, label: 'Đăng xuất', icon: LogOut },
+  ];
 
   const handleLogout = async () => {
     try {
@@ -37,6 +67,16 @@ export default function ProfileView() {
       toast.error(error || 'Đăng xuất thất bại');
     }
   };
+
+  if (!restored) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center">
+          <p className="text-gray-600">Đang khôi phục phiên đăng nhập...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) {
     return (
@@ -51,13 +91,6 @@ export default function ProfileView() {
   const displayName = user.first_name && user.last_name 
     ? `${user.first_name} ${user.last_name}` 
     : user.first_name || user.email || user.phone || 'Người dùng';
-
-  const tabs = [
-    { id: 'account' as TabType, label: 'Thông tin tài khoản', icon: User },
-    { id: 'addresses' as TabType, label: 'Quản lý địa chỉ', icon: MapPin },
-    { id: 'password' as TabType, label: 'Đổi mật khẩu', icon: Lock },
-    { id: 'logout' as TabType, label: 'Đăng xuất', icon: LogOut },
-  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -89,7 +122,10 @@ export default function ProfileView() {
                     return (
                       <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => {
+                          setShowOrderHistory(false);
+                          setActiveTab(tab.id);
+                        }}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors cursor-pointer ${
                           isActive
                             ? 'bg-red-50 text-red-600 font-semibold'
@@ -147,6 +183,8 @@ export default function ProfileView() {
     </div>
   );
 }
+
+
 
 
 

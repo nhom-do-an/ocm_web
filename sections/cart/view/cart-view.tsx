@@ -6,8 +6,7 @@ import React, { useEffect, useCallback, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { removeLineItemApi, updateLineItemApi, clearCartApi, fetchCart } from '@/redux/slices/cartSlice';
 import { useRouter } from 'next/navigation';
-import { checkoutService } from '@/services/api';
-import { toast } from 'react-toastify';
+import { startCheckoutFromCart } from '@/lib/checkout';
 
 export default function CartView() {
   const dispatch = useAppDispatch();
@@ -29,12 +28,8 @@ export default function CartView() {
 
   const handleCheckout = useCallback(async () => {
     try {
-      // Gọi API để lấy checkout token từ cart
-      const checkout = await checkoutService.getCheckoutByCart({});
-      // Chuyển đến trang checkout với token
-      router.push(`/checkout?token=${checkout.token}`);
-    } catch (error: any) {
-      toast.error(error?.message || 'Không thể tạo phiên thanh toán');
+      await startCheckoutFromCart(router);
+    } catch (error) {
       console.error('Checkout error:', error);
     }
   }, [router]);

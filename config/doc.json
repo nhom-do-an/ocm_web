@@ -907,6 +907,54 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "API thêm khách hàng",
+                "parameters": [
+                    {
+                        "description": "Dữ liệu thêm khách hàng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateCustomer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.CustomerDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             }
         },
         "/admin/customers/addresses": {
@@ -1308,6 +1356,105 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/models.CustomerDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "API cập nhật khách hàng (ADMIN)",
+                "parameters": [
+                    {
+                        "description": "Dữ liệu cập nhật khách hàng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateCustomer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.CustomerDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/customers/{id}/addresses": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "API lấy danh sách địa chỉ nhận hàng của khách hàng",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID khách hàng",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.AddressDetail"
+                                            }
                                         }
                                     }
                                 }
@@ -1795,6 +1942,57 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/models.Fulfillment"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/inventory-levels/{location_id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory Level"
+                ],
+                "summary": "API lấy danh sách mức tồn kho theo chi nhánh",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mã chi nhánh",
+                        "name": "location_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.InventoryLevelDetail"
+                                            }
                                         }
                                     }
                                 }
@@ -2704,7 +2902,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/models.Transaction"
+                                                "$ref": "#/definitions/models.TransactionDetail"
                                             }
                                         }
                                     }
@@ -3778,6 +3976,59 @@
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/definitions/models.Source"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "API lấy danh sách người dùng",
+                "parameters": [
+                    {
+                        "description": "Dữ liệu lấy danh sách người dùng",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.GetListUsersRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.User"
                                             }
                                         }
                                     }
@@ -5302,6 +5553,35 @@
                 }
             }
         },
+        "models.CreateCustomer": {
+            "type": "object",
+            "properties": {
+                "address_info": {
+                    "$ref": "#/definitions/models.CreateCustomerAddressRequest"
+                },
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "$ref": "#/definitions/models.CustomerGender"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateCustomerAddressRequest": {
             "type": "object",
             "properties": {
@@ -6490,6 +6770,20 @@
                 }
             }
         },
+        "models.GetListUsersRequest": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.GetListVariantResponse": {
             "type": "object",
             "properties": {
@@ -6501,6 +6795,47 @@
                     "items": {
                         "$ref": "#/definitions/models.VariantDetail"
                     }
+                }
+            }
+        },
+        "models.InventoryLevelDetail": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "integer"
+                },
+                "committed": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "incoming": {
+                    "type": "integer"
+                },
+                "inventory_item_id": {
+                    "type": "integer"
+                },
+                "location_id": {
+                    "type": "integer"
+                },
+                "location_name": {
+                    "type": "string"
+                },
+                "on_hand": {
+                    "type": "integer"
+                },
+                "store_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "variant_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -6576,6 +6911,9 @@
                 },
                 "product_exist": {
                     "type": "boolean"
+                },
+                "product_id": {
+                    "type": "integer"
                 },
                 "product_name": {
                     "type": "string"
@@ -7824,7 +8162,18 @@
                 }
             }
         },
-        "models.Transaction": {
+        "models.TransactionCauseType": {
+            "type": "string",
+            "enum": [
+                "customer",
+                "admin"
+            ],
+            "x-enum-varnames": [
+                "TransactionCauseTypeCustomer",
+                "TransactionCauseTypeAdmin"
+            ]
+        },
+        "models.TransactionDetail": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -7851,6 +8200,9 @@
                 "payment_method_id": {
                     "type": "integer"
                 },
+                "payment_method_name": {
+                    "type": "string"
+                },
                 "reference_type": {
                     "$ref": "#/definitions/models.ReferenceType"
                 },
@@ -7865,17 +8217,6 @@
                     "type": "string"
                 }
             }
-        },
-        "models.TransactionCauseType": {
-            "type": "string",
-            "enum": [
-                "customer",
-                "admin"
-            ],
-            "x-enum-varnames": [
-                "TransactionCauseTypeCustomer",
-                "TransactionCauseTypeAdmin"
-            ]
         },
         "models.TransactionKind": {
             "type": "string",
@@ -7959,6 +8300,35 @@
                     "type": "integer"
                 },
                 "ward_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateCustomer": {
+            "type": "object",
+            "properties": {
+                "dob": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "$ref": "#/definitions/models.CustomerGender"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 }
             }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
@@ -55,6 +55,7 @@ export default function CheckoutView() {
   const [checkout, setCheckout] = useState<CheckoutDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
+  const [isLoadingShippingRates, setIsLoadingShippingRates] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodDetail[]>([]);
   const [selectedShippingRateId, setSelectedShippingRateId] = useState<number | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -71,6 +72,7 @@ export default function CheckoutView() {
     ward_code: '',
     notes: '',
   });
+  const notesRef = useRef(formData.notes);
 
   // Address and regions
   const [addresses, setAddresses] = useState<AddressDetail[]>([]);
@@ -80,6 +82,8 @@ export default function CheckoutView() {
   const [districts, setDistricts] = useState<Region[]>([]);
   const [wards, setWards] = useState<Region[]>([]);
   const [loadingRegions, setLoadingRegions] = useState(false);
+  const [hasInitializedAddress, setHasInitializedAddress] = useState(false);
+  const [isCheckoutAddressDetached, setIsCheckoutAddressDetached] = useState(false);
 
   // Shipping and payment
   const [shippingMethod, setShippingMethod] = useState('delivery');
@@ -106,6 +110,7 @@ export default function CheckoutView() {
         // Load checkout detail
         const checkoutData = await checkoutService.getCheckout(checkoutToken);
         setCheckout(checkoutData);
+        setIsCheckoutAddressDetached(!checkoutData.shipping_address_id);
 
         // Load shipping rates
         const rates = await checkoutService.getShippingRates(checkoutToken);
@@ -173,13 +178,17 @@ export default function CheckoutView() {
     }
   }, [checkoutToken]);
 
+  useEffect(() => {
+    notesRef.current = formData.notes;
+  }, [formData.notes]);
+
   // Load cart on mount
   useEffect(() => {
     dispatch(fetchCart());
   }, [dispatch]);
 
   // Region loading functions
-  const loadProvinces = async () => {
+  const loadProvinces = useCallback(async () => {
     try {
       setLoadingRegions(true);
       const response = await regionsService.getOldRegions('VN', RegionType.Province);
@@ -191,9 +200,9 @@ export default function CheckoutView() {
     } finally {
       setLoadingRegions(false);
     }
-  };
+  }, []);
 
-  const loadDistricts = async (provinceCode: string) => {
+  const loadDistricts = useCallback(async (provinceCode: string) => {
     try {
       setLoadingRegions(true);
       const response = await regionsService.getOldRegions(provinceCode, RegionType.District);
@@ -208,9 +217,9 @@ export default function CheckoutView() {
       setLoadingRegions(false);
     }
     return [];
-  };
+  }, []);
 
-  const loadWards = async (districtCode: string) => {
+  const loadWards = useCallback(async (districtCode: string) => {
     try {
       setLoadingRegions(true);
       const response = await regionsService.getOldRegions(districtCode, RegionType.Ward);
@@ -224,118 +233,236 @@ export default function CheckoutView() {
       setLoadingRegions(false);
     }
     return [];
-  };
-
-  // Load provinces on mount
-  useEffect(() => {
-    loadProvinces();
   }, []);
 
-  // Load user's addresses (only if not loading from checkout)
-  useEffect(() => {
-    const loadAddresses = async () => {
-      // Skip if we already have checkout data (it will have shipping address)
-      if (checkout?.shipping_address) {
+  const hasCompleteAddressInfo = (data: typeof formData) => {
+    return Boolean(
+      data.province_code &&
+      data.district_code &&
+      data.ward_code
+    );
+  };
+
+  const buildCheckoutUpdatePayload = (
+    data: typeof formData,
+    overrides: Partial<typeof formData> = {},
+    options?: { shippingAddressId?: number | null; billingAddressId?: number | null }
+  ): UpdateCheckoutInfoRequest => {
+    const source = { ...data, ...overrides };
+    const payload: UpdateCheckoutInfoRequest = {
+      first_name: source.first_name || undefined,
+      last_name: source.last_name || undefined,
+      email: source.email || undefined,
+      phone: source.phone || undefined,
+      address: source.address || undefined,
+      province_code: source.province_code || undefined,
+      district_code: source.district_code || undefined,
+      ward_code: source.ward_code || undefined,
+      note: source.notes || undefined,
+    };
+
+    if (options) {
+      if (options.shippingAddressId !== undefined) {
+        payload.shipping_address_id = options.shippingAddressId;
+      }
+      if (options.billingAddressId !== undefined) {
+        payload.billing_address_id = options.billingAddressId;
+      }
+    }
+
+    return payload;
+  };
+
+  const refreshShippingRates = useCallback(
+    async (data: typeof formData) => {
+      if (!checkoutToken) {
         return;
       }
 
-      if (!isAuthenticated || !user) {
+      if (!hasCompleteAddressInfo(data)) {
+        setShippingRates([]);
+        setSelectedShippingRateId(null);
         return;
       }
 
       try {
+        setIsLoadingShippingRates(true);
+        const rates = await checkoutService.getShippingRates(checkoutToken);
+        setShippingRates(rates);
+        const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
+        setCheckout(updatedCheckout);
+        if (rates.length > 0) {
+          setSelectedShippingRateId(updatedCheckout.shipping_rate_id ?? rates[0].id);
+        } else {
+          setSelectedShippingRateId(null);
+        }
+      } catch (error) {
+        console.error('Failed to load shipping rates:', error);
+        toast.error('Không thể tải phí vận chuyển');
+      } finally {
+        setIsLoadingShippingRates(false);
+      }
+    },
+    [checkoutToken]
+  );
+
+  const applySavedAddress = useCallback(
+    async (addr: AddressDetail) => {
+      const updatedForm = {
+        first_name: addr.first_name || '',
+        last_name: addr.last_name || '',
+        phone: addr.phone || '',
+        email: addr.email || '',
+        address: addr.address || '',
+        province_code: addr.province_code || '',
+        district_code: addr.district_code || '',
+        ward_code: addr.ward_code || '',
+        notes: notesRef.current || '',
+      };
+
+      setFormData(updatedForm);
+
+      if (addr.province_code) {
+        await loadDistricts(addr.province_code);
+        if (addr.district_code) {
+          await loadWards(addr.district_code);
+        } else {
+          setWards([]);
+        }
+      } else {
+        setDistricts([]);
+        setWards([]);
+      }
+
+      if (checkoutToken) {
+        try {
+          await checkoutService.updateCheckout(checkoutToken, { shipping_address_id: addr.id });
+          setIsCheckoutAddressDetached(false);
+          await refreshShippingRates(updatedForm);
+        } catch (error: any) {
+          console.error('Failed to update checkout:', error);
+          toast.error('Không thể cập nhật địa chỉ');
+        }
+      }
+    },
+    [checkoutToken, loadDistricts, loadWards, refreshShippingRates]
+  );
+
+  const detachCheckoutAddress = useCallback(async () => {
+    if (!checkoutToken) {
+      return;
+    }
+    try {
+      await checkoutService.updateCheckout(checkoutToken, { shipping_address_id: null });
+      setIsCheckoutAddressDetached(true);
+    } catch (error) {
+      console.error('Failed to detach checkout address:', error);
+    }
+  }, [checkoutToken]);
+
+  // Load provinces on mount
+  useEffect(() => {
+    loadProvinces();
+  }, [loadProvinces]);
+
+  useEffect(() => {
+    if (checkout) {
+      setIsCheckoutAddressDetached(!checkout.shipping_address_id);
+    }
+  }, [checkout?.shipping_address_id]);
+
+  // Load user's addresses and auto-select default on first load
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setAddresses([]);
+      setDefaultAddress(null);
+      setHasInitializedAddress(false);
+      setSelectedAddressId(null);
+      return;
+    }
+
+    const loadAddresses = async () => {
+      try {
         const addressList = await addressService.getAddresses();
         setAddresses(addressList);
+        const defaultAddr = addressList.find((addr) => addr.default_address) || addressList[0] || null;
+        setDefaultAddress(defaultAddr || null);
+
+        if (!hasInitializedAddress) {
+          if (checkout?.shipping_address_id && addressList.some((addr) => addr.id === checkout.shipping_address_id)) {
+            setSelectedAddressId(checkout.shipping_address_id);
+          } else if (!checkout?.shipping_address && defaultAddr) {
+            setSelectedAddressId(defaultAddr.id);
+            await applySavedAddress(defaultAddr);
+          } else if (!checkout?.shipping_address_id) {
+            setSelectedAddressId(null);
+          }
+          setHasInitializedAddress(true);
+        }
       } catch (error) {
         console.error('Failed to load address:', error);
       }
     };
 
-    if (isAuthenticated && user && !checkout) {
-      loadAddresses();
-    }
-  }, [isAuthenticated, user, checkout]);
+    loadAddresses();
+  }, [isAuthenticated, user, checkout?.shipping_address, checkout?.shipping_address_id, hasInitializedAddress, applySavedAddress]);
 
   const handleChange = async (field: string, value: string) => {
-    const newFormData = { ...formData, [field]: value };
-    setFormData(newFormData);
+    let updatedFormData = { ...formData, [field]: value };
+    let overrides: Partial<typeof formData> = {};
+    let shouldReloadShippingRates = false;
+
+    if (field !== 'notes' && selectedAddressId !== null) {
+      setSelectedAddressId(null);
+      if (!isCheckoutAddressDetached) {
+        await detachCheckoutAddress();
+      }
+    }
+
+    if (field === 'province_code') {
+      overrides = { district_code: '', ward_code: '' };
+      updatedFormData = { ...updatedFormData, ...overrides };
+      setDistricts([]);
+      setWards([]);
+      setSelectedAddressId(null);
+      shouldReloadShippingRates = true;
+    } else if (field === 'district_code') {
+      overrides = { ward_code: '' };
+      updatedFormData = { ...updatedFormData, ...overrides };
+      setWards([]);
+      setSelectedAddressId(null);
+      shouldReloadShippingRates = true;
+    } else if (field === 'ward_code') {
+      setSelectedAddressId(null);
+      shouldReloadShippingRates = true;
+    }
+
+    setFormData(updatedFormData);
 
     if (field === 'province_code') {
       await loadDistricts(value);
-      // Khi thay đổi tỉnh, cần update checkout và reload shipping rates
-      if (checkoutToken) {
-        try {
-          const updateData: UpdateCheckoutInfoRequest = {
-            ...newFormData,
-            district_code: '', // Reset district khi đổi tỉnh
-            ward_code: '', // Reset ward khi đổi tỉnh
-          };
-          await checkoutService.updateCheckout(checkoutToken, updateData);
-          // Reload shipping rates sau khi update
-          const rates = await checkoutService.getShippingRates(checkoutToken);
-          setShippingRates(rates);
-          // Reload checkout để có data mới nhất
-          const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
-          setCheckout(updatedCheckout);
-          if (rates.length > 0 && !updatedCheckout.shipping_rate_id) {
-            setSelectedShippingRateId(rates[0].id);
-          }
-        } catch (error: any) {
-          console.error('Failed to update checkout:', error);
-          toast.error('Không thể cập nhật thông tin');
-        }
-      }
     } else if (field === 'district_code') {
       await loadWards(value);
-      // Khi thay đổi quận/huyện, cần update checkout và reload shipping rates
-      if (checkoutToken) {
-        try {
-          const updateData: UpdateCheckoutInfoRequest = {
-            ...newFormData,
-            ward_code: '', // Reset ward khi đổi quận
-          };
-          await checkoutService.updateCheckout(checkoutToken, updateData);
-          const rates = await checkoutService.getShippingRates(checkoutToken);
-          setShippingRates(rates);
-          const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
-          setCheckout(updatedCheckout);
-          if (rates.length > 0 && !updatedCheckout.shipping_rate_id) {
-            setSelectedShippingRateId(rates[0].id);
-          }
-        } catch (error: any) {
-          console.error('Failed to update checkout:', error);
-          toast.error('Không thể cập nhật thông tin');
-        }
-      }
-    } else if (field === 'ward_code' && checkoutToken) {
-      // Khi thay đổi phường/xã, update checkout
-      try {
-        const updateData: UpdateCheckoutInfoRequest = {
-          ...newFormData,
-        };
-        await checkoutService.updateCheckout(checkoutToken, updateData);
-        const rates = await checkoutService.getShippingRates(checkoutToken);
-        setShippingRates(rates);
+    }
+
+    if (!checkoutToken) {
+      return;
+    }
+
+    try {
+      await checkoutService.updateCheckout(
+        checkoutToken,
+        buildCheckoutUpdatePayload(updatedFormData, overrides)
+      );
+      if (shouldReloadShippingRates) {
+        await refreshShippingRates(updatedFormData);
+      } else {
         const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
         setCheckout(updatedCheckout);
-        if (rates.length > 0 && !updatedCheckout.shipping_rate_id) {
-          setSelectedShippingRateId(rates[0].id);
-        }
-      } catch (error: any) {
-        console.error('Failed to update checkout:', error);
       }
-    } else if (checkoutToken && ['first_name', 'last_name', 'email', 'phone', 'address', 'notes'].includes(field)) {
-      // Update các trường khác không cần reload shipping rates
-      try {
-        const updateData: UpdateCheckoutInfoRequest = {
-          ...newFormData,
-        };
-        await checkoutService.updateCheckout(checkoutToken, updateData);
-        const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
-        setCheckout(updatedCheckout);
-      } catch (error: any) {
-        console.error('Failed to update checkout:', error);
-      }
+    } catch (error: any) {
+      console.error('Failed to update checkout:', error);
+      toast.error('Không thể cập nhật thông tin');
     }
   };
 
@@ -558,6 +685,7 @@ Trân trọng cảm ơn.`
   const displayItems = checkout.line_items || items;
   const displayTotal = checkout.total_price || total;
   const displayItemCount = checkout.item_count || itemCount;
+  const isShippingAddressComplete = hasCompleteAddressInfo(formData);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -596,8 +724,8 @@ Trân trọng cảm ơn.`
                       value={selectedAddressId ? selectedAddressId.toString() : addresses.length > 0 ? 'other' : ''}
                       onValueChange={async (value) => {
                         if (value === 'other') {
-                          // Reset form for new address
                           setSelectedAddressId(null);
+                          await detachCheckoutAddress();
                           const newFormData = {
                             first_name: user?.first_name || '',
                             last_name: user?.last_name || '',
@@ -607,72 +735,32 @@ Trân trọng cảm ơn.`
                             province_code: '',
                             district_code: '',
                             ward_code: '',
-                            notes: formData.notes,
+                            notes: notesRef.current || '',
                           };
                           setFormData(newFormData);
                           setDistricts([]);
                           setWards([]);
-                          
-                          // Update checkout
                           if (checkoutToken) {
                             try {
-                              await checkoutService.updateCheckout(checkoutToken, {
-                                ...newFormData,
-                                shipping_rate_id: undefined,
-                              });
-                              const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
-                              setCheckout(updatedCheckout);
-                              setShippingRates([]);
+                              await checkoutService.updateCheckout(
+                                checkoutToken,
+                                buildCheckoutUpdatePayload(newFormData, { district_code: '', ward_code: '' })
+                              );
+                              await refreshShippingRates(newFormData);
                             } catch (error: any) {
                               console.error('Failed to update checkout:', error);
+                              toast.error('Không thể cập nhật địa chỉ');
                             }
                           }
-                        } else {
-                          const addrId = parseInt(value);
-                          const addr = addresses.find((a) => a.id === addrId);
-                          if (addr) {
-                            setSelectedAddressId(addr.id);
-                            // Load districts first
-                            if (addr.province_code) {
-                              await loadDistricts(addr.province_code);
-                              // After districts are loaded, set district and load wards
-                              if (addr.district_code) {
-                                await loadWards(addr.district_code);
-                              }
-                            }
-                            // Set form data after regions are loaded
-                            const newFormData = {
-                              first_name: addr.first_name || '',
-                              last_name: addr.last_name || '',
-                              phone: addr.phone || '',
-                              email: addr.email || '',
-                              address: addr.address || '',
-                              province_code: addr.province_code || '',
-                              district_code: addr.district_code || '',
-                              ward_code: addr.ward_code || '',
-                              notes: formData.notes,
-                            };
-                            setFormData(newFormData);
+                          return;
+                        }
 
-                            // Update checkout với địa chỉ mới
-                            if (checkoutToken) {
-                              try {
-                                await checkoutService.updateCheckout(checkoutToken, {
-                                  ...newFormData,
-                                });
-                                const rates = await checkoutService.getShippingRates(checkoutToken);
-                                setShippingRates(rates);
-                                const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
-                                setCheckout(updatedCheckout);
-                                if (rates.length > 0 && !updatedCheckout.shipping_rate_id) {
-                                  setSelectedShippingRateId(rates[0].id);
-                                }
-                              } catch (error: any) {
-                                console.error('Failed to update checkout:', error);
-                                toast.error('Không thể cập nhật địa chỉ');
-                              }
-                            }
-                          }
+                        const addrId = parseInt(value);
+                        const addr = addresses.find((a) => a.id === addrId);
+                        if (addr) {
+                          setSelectedAddressId(addr.id);
+                          setIsCheckoutAddressDetached(false);
+                          await applySavedAddress(addr);
                         }
                       }}
                     >
@@ -882,7 +970,11 @@ Trân trọng cảm ơn.`
                       ))
                     ) : (
                       <p className="text-gray-500 text-sm">
-                        {formData.province_code ? 'Đang tải phí vận chuyển...' : 'Vui lòng chọn tỉnh/thành phố để xem phí vận chuyển'}
+                        {!isShippingAddressComplete
+                          ? 'Vui lòng chọn tỉnh/thành phố, quận/huyện và phường/xã để xem phí vận chuyển'
+                          : isLoadingShippingRates
+                            ? 'Đang tải phí vận chuyển...'
+                            : 'Không tìm thấy phí vận chuyển phù hợp cho địa chỉ này'}
                       </p>
                     )}
                   </div>
@@ -1090,4 +1182,5 @@ Trân trọng cảm ơn.`
     </div>
   );
 }
+
 

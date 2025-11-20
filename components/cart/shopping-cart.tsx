@@ -3,16 +3,19 @@
 import React, { useEffect } from 'react';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Separator } from '@/components/ui/separator';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { removeLineItemApi, updateLineItemApi, setCartOpen, fetchCart } from '@/redux/slices/cartSlice';
 import { formatPrice } from '@/utils';
+import { startCheckoutFromCart } from '@/lib/checkout';
 
 export function ShoppingCart() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { items, isOpen, total } = useAppSelector((state) => state.cart);
+  const [isProcessingCheckout, setIsProcessingCheckout] = React.useState(false);
 
   const handleRemoveItem = (itemId: number | string) => {
     dispatch(removeLineItemApi({ line_item_id: itemId }));
@@ -24,6 +27,21 @@ export function ShoppingCart() {
 
   const handleClose = () => {
     dispatch(setCartOpen(false));
+  };
+
+  const handleCheckoutNow = async () => {
+    if (isProcessingCheckout) {
+      return;
+    }
+    setIsProcessingCheckout(true);
+    try {
+      await startCheckoutFromCart(router);
+      handleClose();
+    } catch (error) {
+      console.error('Checkout error:', error);
+    } finally {
+      setIsProcessingCheckout(false);
+    }
   };
 
   useEffect(() => {
@@ -134,8 +152,13 @@ export function ShoppingCart() {
                 </div>
 
                 <div className="space-y-2">
-                  <Button className="w-full" size="lg" asChild>
-                    <Link href="/checkout">Thanh toán</Link>
+                  <Button
+                    className="w-full cursor-pointer"
+                    size="lg"
+                    onClick={handleCheckoutNow}
+                    disabled={isProcessingCheckout || items.length === 0}
+                  >
+                    {isProcessingCheckout ? 'Đang xử lý...' : 'Thanh toán ngay'}
                   </Button>
 
                   <Button variant="outline" className="w-full" onClick={handleClose} asChild>

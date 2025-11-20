@@ -189,6 +189,8 @@ export interface UpdateCheckoutInfoRequest {
   ward_code?: string;
   payment_method_id?: number;
   shipping_rate_id?: number;
+  shipping_address_id?: number | null;
+  billing_address_id?: number | null;
   note?: string;
   line_items?: any[];
 }

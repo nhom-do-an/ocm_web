@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { orderService } from '@/services/api';
@@ -39,6 +39,61 @@ export default function CheckoutSuccessView() {
     loadOrder();
   }, [orderId, router]);
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(price);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const lineItemsSubtotal = useMemo(() => {
+    if (!order?.line_items) return 0;
+    return order.line_items.reduce((sum: number, item: any) => {
+      const price = typeof item.price === 'number' ? item.price : 0;
+      const quantity = typeof item.quantity === 'number' ? item.quantity : 1;
+      return sum + price * quantity;
+    }, 0);
+  }, [order]);
+
+  const subtotalPrice =
+    typeof order?.subtotal_price === 'number' ? order.subtotal_price : lineItemsSubtotal;
+
+  const shippingPrice = useMemo(() => {
+    if (typeof order?.total_shipping_price === 'number') {
+      return order.total_shipping_price;
+    }
+    if (order?.shipping_lines?.length) {
+      return order.shipping_lines.reduce((sum: number, line: any) => {
+        const linePrice =
+          typeof line.price === 'number'
+            ? line.price
+            : typeof line.total_price === 'number'
+              ? line.total_price
+              : 0;
+        return sum + linePrice;
+      }, 0);
+    }
+    return 0;
+  }, [order]);
+
+  const discountTotal =
+    typeof order?.total_discount === 'number' ? order.total_discount : 0;
+
+  const grandTotal =
+    typeof order?.total_price === 'number'
+      ? order.total_price
+      : subtotalPrice + shippingPrice - discountTotal;
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -59,23 +114,6 @@ export default function CheckoutSuccessView() {
       </div>
     );
   }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -178,23 +216,21 @@ export default function CheckoutSuccessView() {
             <div className="mt-6 pt-4 border-t space-y-2">
               <div className="flex justify-between text-gray-600">
                 <span>Tạm tính:</span>
-                <span>{formatPrice(order.subtotal_price || 0)}</span>
+                <span>{formatPrice(subtotalPrice)}</span>
               </div>
-              {order.total_shipping_price && order.total_shipping_price > 0 && (
-                <div className="flex justify-between text-gray-600">
-                  <span>Phí vận chuyển:</span>
-                  <span>{formatPrice(order.total_shipping_price)}</span>
-                </div>
-              )}
-              {order.total_discount && order.total_discount > 0 && (
+              <div className="flex justify-between text-gray-600">
+                <span>Phí vận chuyển:</span>
+                <span>{formatPrice(shippingPrice)}</span>
+              </div>
+              {discountTotal > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>Giảm giá:</span>
-                  <span>-{formatPrice(order.total_discount)}</span>
+                  <span>-{formatPrice(discountTotal)}</span>
                 </div>
               )}
               <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
                 <span>Tổng cộng:</span>
-                <span>{formatPrice(order.total_price || 0)}</span>
+                <span>{formatPrice(grandTotal)}</span>
               </div>
             </div>
           </CardContent>
@@ -205,7 +241,7 @@ export default function CheckoutSuccessView() {
           <Button
             variant="outline"
             className="flex-1 cursor-pointer"
-            onClick={() => router.push('/account')}
+            onClick={() => router.push('/account?view=orders')}
           >
             <ShoppingBag className="h-4 w-4 mr-2" />
             Xem đơn hàng của tôi
