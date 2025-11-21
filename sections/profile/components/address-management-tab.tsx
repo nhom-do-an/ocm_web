@@ -38,7 +38,9 @@ export default function AddressManagementTab() {
   };
 
   const handleEdit = (address: AddressDetail) => {
-    setEditingAddress(address);
+    // Deep copy to prevent mutating the original address object
+    const addressCopy = JSON.parse(JSON.stringify(address));
+    setEditingAddress(addressCopy);
     setIsDialogOpen(true);
   };
 

@@ -112,14 +112,8 @@ export default function CheckoutView() {
         setCheckout(checkoutData);
         setIsCheckoutAddressDetached(!checkoutData.shipping_address_id);
 
-        // Load shipping rates
-        const rates = await checkoutService.getShippingRates(checkoutToken);
-        setShippingRates(rates);
-        if (checkoutData.shipping_rate_id) {
-          setSelectedShippingRateId(checkoutData.shipping_rate_id);
-        } else if (rates.length > 0) {
-          setSelectedShippingRateId(rates[0].id);
-        }
+        setShippingRates([]);
+        setSelectedShippingRateId(null);
 
         // Load payment methods (chỉ lấy active)
         const methods = await paymentMethodsService.getPaymentMethods({ status: 'active' });
@@ -128,30 +122,7 @@ export default function CheckoutView() {
           setPaymentMethod(checkoutData.payment_method_id.toString());
         }
 
-        // Pre-fill form từ checkout data
-        if (checkoutData.shipping_address) {
-          const addr = checkoutData.shipping_address;
-          setFormData({
-            first_name: addr.first_name || '',
-            last_name: addr.last_name || '',
-            phone: addr.phone || '',
-            email: addr.email || '',
-            address: addr.address || '',
-            province_code: addr.province_code || '',
-            district_code: addr.district_code || '',
-            ward_code: addr.ward_code || '',
-            notes: checkoutData.note || '',
-          });
-
-          // Load regions
-          if (addr.province_code) {
-            await loadDistricts(addr.province_code);
-            if (addr.district_code) {
-              await loadWards(addr.district_code);
-            }
-          }
-        } else if (user) {
-          // Fallback to user data
+        if (user) {
           setFormData({
             first_name: user.first_name || '',
             last_name: user.last_name || '',
@@ -161,7 +132,19 @@ export default function CheckoutView() {
             province_code: '',
             district_code: '',
             ward_code: '',
-            notes: '',
+            notes: checkoutData.note || '',
+          });
+        } else {
+          setFormData({
+            first_name: '',
+            last_name: '',
+            phone: '',
+            email: '',
+            address: '',
+            province_code: '',
+            district_code: '',
+            ward_code: '',
+            notes: checkoutData.note || '',
           });
         }
       } catch (error: any) {
@@ -308,24 +291,27 @@ export default function CheckoutView() {
 
   const applySavedAddress = useCallback(
     async (addr: AddressDetail) => {
+      // Deep copy để tránh mutate object gốc
+      const addressCopy = JSON.parse(JSON.stringify(addr));
+      
       const updatedForm = {
-        first_name: addr.first_name || '',
-        last_name: addr.last_name || '',
-        phone: addr.phone || '',
-        email: addr.email || '',
-        address: addr.address || '',
-        province_code: addr.province_code || '',
-        district_code: addr.district_code || '',
-        ward_code: addr.ward_code || '',
+        first_name: addressCopy.first_name || '',
+        last_name: addressCopy.last_name || '',
+        phone: addressCopy.phone || '',
+        email: addressCopy.email || '',
+        address: addressCopy.address || '',
+        province_code: addressCopy.province_code || '',
+        district_code: addressCopy.district_code || '',
+        ward_code: addressCopy.ward_code || '',
         notes: notesRef.current || '',
       };
 
       setFormData(updatedForm);
 
-      if (addr.province_code) {
-        await loadDistricts(addr.province_code);
-        if (addr.district_code) {
-          await loadWards(addr.district_code);
+      if (addressCopy.province_code) {
+        await loadDistricts(addressCopy.province_code);
+        if (addressCopy.district_code) {
+          await loadWards(addressCopy.district_code);
         } else {
           setWards([]);
         }
@@ -334,18 +320,13 @@ export default function CheckoutView() {
         setWards([]);
       }
 
-      if (checkoutToken) {
-        try {
-          await checkoutService.updateCheckout(checkoutToken, { shipping_address_id: addr.id });
-          setIsCheckoutAddressDetached(false);
-          await refreshShippingRates(updatedForm);
-        } catch (error: any) {
-          console.error('Failed to update checkout:', error);
-          toast.error('Không thể cập nhật địa chỉ');
-        }
-      }
+      // KHÔNG gửi API update khi chọn địa chỉ từ sổ
+      // Chỉ hiển thị thông tin địa chỉ trong form
+      // API chỉ được gọi khi user bấm "Đặt hàng"
+      setIsCheckoutAddressDetached(false);
+      await refreshShippingRates(updatedForm);
     },
-    [checkoutToken, loadDistricts, loadWards, refreshShippingRates]
+    [loadDistricts, loadWards, refreshShippingRates]
   );
 
   const detachCheckoutAddress = useCallback(async () => {
@@ -371,7 +352,7 @@ export default function CheckoutView() {
     }
   }, [checkout?.shipping_address_id]);
 
-  // Load user's addresses and auto-select default on first load
+  // Load user's addresses - KHÔNG tự động chọn địa chễ mặc định
   useEffect(() => {
     if (!isAuthenticated || !user) {
       setAddresses([]);
@@ -388,15 +369,62 @@ export default function CheckoutView() {
         const defaultAddr = addressList.find((addr) => addr.default_address) || addressList[0] || null;
         setDefaultAddress(defaultAddr || null);
 
-        if (!hasInitializedAddress) {
-          if (checkout?.shipping_address_id && addressList.some((addr) => addr.id === checkout.shipping_address_id)) {
-            setSelectedAddressId(checkout.shipping_address_id);
-          } else if (!checkout?.shipping_address && defaultAddr) {
-            setSelectedAddressId(defaultAddr.id);
-            await applySavedAddress(defaultAddr);
-          } else if (!checkout?.shipping_address_id) {
-            setSelectedAddressId(null);
+        if (!hasInitializedAddress && checkout) {
+          // Nếu checkout có shipping_address_id và địa chỉ tồn tại trong danh sách
+          if (checkout.shipping_address_id && addressList.some((addr) => addr.id === checkout.shipping_address_id)) {
+            const existingAddr = addressList.find((addr) => addr.id === checkout.shipping_address_id);
+            if (existingAddr) {
+              const existingAddrCopy = JSON.parse(JSON.stringify(existingAddr));
+              setSelectedAddressId(existingAddrCopy.id);
+              
+              // Apply address inline để tránh dependency issue
+              const updatedForm = {
+                first_name: existingAddrCopy.first_name || '',
+                last_name: existingAddrCopy.last_name || '',
+                phone: existingAddrCopy.phone || '',
+                email: existingAddrCopy.email || '',
+                address: existingAddrCopy.address || '',
+                province_code: existingAddrCopy.province_code || '',
+                district_code: existingAddrCopy.district_code || '',
+                ward_code: existingAddrCopy.ward_code || '',
+                notes: notesRef.current || '',
+              };
+              setFormData(updatedForm);
+              
+              if (existingAddrCopy.province_code) {
+                await loadDistricts(existingAddrCopy.province_code);
+                if (existingAddrCopy.district_code) {
+                  await loadWards(existingAddrCopy.district_code);
+                }
+              }
+              
+              setIsCheckoutAddressDetached(false);
+              await refreshShippingRates(updatedForm);
+            }
           }
+          // KHÔNG tự động apply địa chỉ mặc định - để mặc định là "Địa chỉ khác"
+          // User sẽ tự chọn địa chỉ từ dropdown
+          else {
+            // Đặt mặc định là không chọn địa chỉ nào
+            setSelectedAddressId(null);
+            setIsCheckoutAddressDetached(true);
+            
+            // Nếu có thông tin user, pre-fill email và tên
+            if (user) {
+              setFormData({
+                first_name: user.first_name || '',
+                last_name: user.last_name || '',
+                phone: user.phone || '',
+                email: user.email || '',
+                address: '',
+                province_code: '',
+                district_code: '',
+                ward_code: '',
+                notes: '',
+              });
+            }
+          }
+          
           setHasInitializedAddress(true);
         }
       } catch (error) {
@@ -405,18 +433,17 @@ export default function CheckoutView() {
     };
 
     loadAddresses();
-  }, [isAuthenticated, user, checkout?.shipping_address, checkout?.shipping_address_id, hasInitializedAddress, applySavedAddress]);
+  }, [isAuthenticated, user, checkout?.shipping_address_id, hasInitializedAddress, checkoutToken, loadDistricts, loadWards, refreshShippingRates]);
 
   const handleChange = async (field: string, value: string) => {
     let updatedFormData = { ...formData, [field]: value };
     let overrides: Partial<typeof formData> = {};
     let shouldReloadShippingRates = false;
 
+    // Nếu user thay đổi bất kỳ field nào (trừ notes), detach khỏi địa chỉ đã lưu
     if (field !== 'notes' && selectedAddressId !== null) {
       setSelectedAddressId(null);
-      if (!isCheckoutAddressDetached) {
-        await detachCheckoutAddress();
-      }
+      setIsCheckoutAddressDetached(true); // Set state ngay lập tức
     }
 
     if (field === 'province_code') {
@@ -449,20 +476,36 @@ export default function CheckoutView() {
       return;
     }
 
-    try {
-      await checkoutService.updateCheckout(
-        checkoutToken,
-        buildCheckoutUpdatePayload(updatedFormData, overrides)
-      );
+    // CHỈ gửi API update khi user đang ở mode "Địa chỉ khác" (selectedAddressId = null)
+    // Nếu user đang chọn địa chỉ từ sổ, KHÔNG gửi API để tránh ghi đè
+    if (selectedAddressId === null) {
+      try {
+        // Khi user thay đổi thông tin, phải gửi shipping_address_id = null 
+        // để API biết đây là địa chỉ mới, KHÔNG ghi đè vào địa chỉ đã lưu
+        const payload = buildCheckoutUpdatePayload(updatedFormData, overrides);
+        
+        // QUAN TRỌNG: Luôn gửi shipping_address_id = null
+        if (field !== 'notes') {
+          payload.shipping_address_id = null;
+        }
+        
+        await checkoutService.updateCheckout(checkoutToken, payload);
+        
+        if (shouldReloadShippingRates) {
+          await refreshShippingRates(updatedFormData);
+        } else {
+          const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
+          setCheckout(updatedCheckout);
+        }
+      } catch (error: any) {
+        console.error('Failed to update checkout:', error);
+        toast.error('Không thể cập nhật thông tin');
+      }
+    } else {
+      // User đang ở mode chọn địa chỉ từ sổ, chỉ reload shipping rates
       if (shouldReloadShippingRates) {
         await refreshShippingRates(updatedFormData);
-      } else {
-        const updatedCheckout = await checkoutService.getCheckout(checkoutToken);
-        setCheckout(updatedCheckout);
       }
-    } catch (error: any) {
-      console.error('Failed to update checkout:', error);
-      toast.error('Không thể cập nhật thông tin');
     }
   };
 
@@ -497,18 +540,26 @@ export default function CheckoutView() {
 
       // Update checkout với thông tin cuối cùng trước khi complete
       const updateData: UpdateCheckoutInfoRequest = {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        province_code: formData.province_code,
-        district_code: formData.district_code,
-        ward_code: formData.ward_code,
         payment_method_id: parseInt(paymentMethod),
         shipping_rate_id: selectedShippingRateId,
         note: formData.notes,
       };
+      
+      // Nếu user đã chọn địa chỉ từ sổ địa chỉ
+      if (selectedAddressId !== null) {
+        updateData.shipping_address_id = selectedAddressId;
+      } else {
+        // Nếu user nhập địa chỉ mới (mode "Địa chỉ khác")
+        updateData.first_name = formData.first_name;
+        updateData.last_name = formData.last_name;
+        updateData.email = formData.email;
+        updateData.phone = formData.phone;
+        updateData.address = formData.address;
+        updateData.province_code = formData.province_code;
+        updateData.district_code = formData.district_code;
+        updateData.ward_code = formData.ward_code;
+        updateData.shipping_address_id = null;
+      }
 
       await checkoutService.updateCheckout(checkoutToken, updateData);
 
@@ -725,7 +776,8 @@ Trân trọng cảm ơn.`
                       onValueChange={async (value) => {
                         if (value === 'other') {
                           setSelectedAddressId(null);
-                          await detachCheckoutAddress();
+                          setIsCheckoutAddressDetached(true);
+                          
                           const newFormData = {
                             first_name: user?.first_name || '',
                             last_name: user?.last_name || '',
@@ -740,13 +792,18 @@ Trân trọng cảm ơn.`
                           setFormData(newFormData);
                           setDistricts([]);
                           setWards([]);
+                          
                           if (checkoutToken) {
                             try {
-                              await checkoutService.updateCheckout(
-                                checkoutToken,
-                                buildCheckoutUpdatePayload(newFormData, { district_code: '', ward_code: '' })
-                              );
-                              await refreshShippingRates(newFormData);
+                              // CHỈ gửi shipping_address_id = null, KHÔNG gửi các field khác
+                              // để tránh lỗi validate (ví dụ: phone rỗng)
+                              await checkoutService.updateCheckout(checkoutToken, {
+                                shipping_address_id: null,
+                              });
+                              
+                              // Clear shipping rates vì chưa có địa chỉ đầy đủ
+                              setShippingRates([]);
+                              setSelectedShippingRateId(null);
                             } catch (error: any) {
                               console.error('Failed to update checkout:', error);
                               toast.error('Không thể cập nhật địa chỉ');
@@ -758,9 +815,11 @@ Trân trọng cảm ơn.`
                         const addrId = parseInt(value);
                         const addr = addresses.find((a) => a.id === addrId);
                         if (addr) {
-                          setSelectedAddressId(addr.id);
+                          // Deep copy để tránh thay đổi địa chỉ gốc
+                          const addressCopy = JSON.parse(JSON.stringify(addr));
+                          setSelectedAddressId(addressCopy.id);
                           setIsCheckoutAddressDetached(false);
-                          await applySavedAddress(addr);
+                          await applySavedAddress(addressCopy);
                         }
                       }}
                     >

@@ -67,44 +67,57 @@ export default function AddressFormDialog({ open, onClose, address }: AddressFor
 
   useEffect(() => {
     if (open) {
-      if (address) {
-        setFormData({
-          first_name: address.first_name || '',
-          last_name: address.last_name || '',
-          phone: address.phone || '',
-          email: address.email || '',
-          address: address.address || '',
-          zip: address.zip || '',
-          province_code: address.province_code || '',
-          district_code: address.district_code || '',
-          ward_code: address.ward_code || '',
-          is_default: address.default_address || false,
-        });
-        // Load regions if editing
-        if (address.province_code) {
-          loadDistricts(address.province_code);
-          if (address.district_code) {
-            loadWards(address.district_code);
+      const initializeForm = async () => {
+        // Load provinces first
+        await loadProvinces();
+        
+        if (address) {
+          // Deep copy để tránh mutate object gốc
+          const addressCopy = JSON.parse(JSON.stringify(address));
+          
+          // Load regions TRƯỚC khi set form data để đảm bảo các dropdown đã có data
+          if (addressCopy.province_code) {
+            await loadDistricts(addressCopy.province_code, true);
+            if (addressCopy.district_code) {
+              await loadWards(addressCopy.district_code, true);
+            }
           }
+          
+          // Set form data SAU KHI đã load xong regions
+          setFormData({
+            first_name: addressCopy.first_name || '',
+            last_name: addressCopy.last_name || '',
+            phone: addressCopy.phone || '',
+            email: addressCopy.email || '',
+            address: addressCopy.address || '',
+            zip: addressCopy.zip || '',
+            province_code: addressCopy.province_code || '',
+            district_code: addressCopy.district_code || '',
+            ward_code: addressCopy.ward_code || '',
+            is_default: addressCopy.default_address || false,
+          });
+        } else {
+          setFormData({
+            first_name: '',
+            last_name: '',
+            phone: '',
+            email: '',
+            address: '',
+            zip: '',
+            province_code: '',
+            district_code: '',
+            ward_code: '',
+            is_default: false,
+          });
+          setDistricts([]);
+          setWards([]);
         }
-      } else {
-        setFormData({
-          first_name: '',
-          last_name: '',
-          phone: '',
-          email: '',
-          address: '',
-          zip: '',
-          province_code: '',
-          district_code: '',
-          ward_code: '',
-          is_default: false,
-        });
-      }
-      loadProvinces();
-      setErrors({});
+        setErrors({});
+      };
+      
+      initializeForm();
     }
-  }, [open, address]);
+  }, [open, address?.id]);
 
   const loadProvinces = async () => {
     try {
@@ -121,14 +134,15 @@ export default function AddressFormDialog({ open, onClose, address }: AddressFor
     }
   };
 
-  const loadDistricts = async (provinceCode: string) => {
+  const loadDistricts = async (provinceCode: string, isInitializing = false) => {
     try {
       setLoadingRegions(true);
       const response = await regionsService.getOldRegions(provinceCode, 3);
       if (response && response.success) {
         setDistricts(response.data);
         setWards([]);
-        if (!address || address.province_code !== provinceCode) {
+        // Chỉ reset khi KHÔNG phải đang khởi tạo và province thay đổi
+        if (!isInitializing && (!address || address.province_code !== provinceCode)) {
           setFormData((prev) => ({ ...prev, district_code: '', ward_code: '' }));
         }
       }
@@ -140,13 +154,14 @@ export default function AddressFormDialog({ open, onClose, address }: AddressFor
     }
   };
 
-  const loadWards = async (districtCode: string) => {
+  const loadWards = async (districtCode: string, isInitializing = false) => {
     try {
       setLoadingRegions(true);
       const response = await regionsService.getOldRegions(districtCode, 4);
       if (response && response.success) {
         setWards(response.data);
-        if (!address || address.district_code !== districtCode) {
+        // Chỉ reset khi KHÔNG phải đang khởi tạo và district thay đổi
+        if (!isInitializing && (!address || address.district_code !== districtCode)) {
           setFormData((prev) => ({ ...prev, ward_code: '' }));
         }
       }
