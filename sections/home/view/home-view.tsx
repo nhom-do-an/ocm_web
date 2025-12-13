@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { CollectionGrid } from '@/components/home/collection-grid';
 import { BannerSlider } from '@/components/home/banner-slider';
 import { ServiceBenefits } from '@/components/home/service-benefits';
+import { AIProductSection } from '@/components/home/ai-product-section';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { fetchProducts } from '@/redux/slices/productsSlice';
 import { ProductDetail } from '@/types/product';
@@ -61,13 +62,19 @@ export default function HomeView() {
       <ServiceBenefits />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Featured Products */}
-        <section className="mb-12">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">SẢN PHẨM BÁN CHẠY</h2>
-            <ProductGrid products={featuredProducts} className="gap-6" />
-          </div>
-        </section>
+        {/* AI Trending Products - HOT */}
+        <AIProductSection 
+          title="🔥 SẢN PHẨM HOT - ĐANG THỊNH HÀNH"
+          type="trending"
+          limit={8}
+        />
+
+        {/* AI Personalized Recommendations */}
+        <AIProductSection 
+          title="💡 CÓ THỂ BẠN QUAN TÂM"
+          type="recommendations"
+          limit={8}
+        />
 
         {/* Featured Collections */}
         {!collectionsLoading && collections.length > 0 && (

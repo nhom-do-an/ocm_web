@@ -13,3 +13,4 @@ export { addressService, AddressService } from './addresses';
 export { checkoutService, CheckoutService } from './checkout';
 export { paymentMethodsService, PaymentMethodsService } from './payment-methods';
 export { beneficiaryAccountsService, BeneficiaryAccountsService } from './beneficiary-accounts';
+export { aiService } from './ai';

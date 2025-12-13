@@ -90,6 +90,13 @@ export const API_ENDPOINTS = {
     LIST: '/admin/beneficiary-accounts',
   },
 
+   // AI endpoints
+   AI: {
+    TRENDING: '/ai/trending',
+    RECOMMENDATIONS: '/ai/recommendations',
+    NEXT_ITEMS: '/ai/next-items',
+  },
+
   // Legacy endpoints for backward compatibility
   LEGACY: {
     ORDERS: '/orders',

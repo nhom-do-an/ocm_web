@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel"
+import { SmartRecommendations } from "@/components/home/smart-recommendations"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { addToCartApi } from "@/redux/slices/cartSlice"
 import { fetchProduct } from "@/redux/slices/productsSlice"
@@ -662,6 +663,15 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
                 </Card>
               </div>
             </div>
+
+        {/* Smart Recommendations: Next Items + Recommendations */}
+        <div className="container mx-auto px-4 py-8">
+          <SmartRecommendations 
+            title="💡 CÓ THỂ BẠN QUAN TÂM"
+            nextItemsLimit={4}
+            recommendationsLimit={8}
+          />
+        </div>
         </div>
       )}
     </div>
