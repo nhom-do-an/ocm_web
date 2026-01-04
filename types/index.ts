@@ -1,7 +1,6 @@
 // Re-export all types from this index file
 export * from './product';
 export * from './order';
-export * from './api';
 export * from './cart';
 
 // Common utility types

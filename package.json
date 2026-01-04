@@ -6,7 +6,7 @@
     "dev": "next dev -p 3002",
     "dev:https": "node scripts/dev-https.js",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port ${SERVICE_PORT}",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx}\" --ignore-path .gitignore",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx}\" --ignore-path .gitignore"
