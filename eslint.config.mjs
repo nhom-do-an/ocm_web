@@ -24,7 +24,7 @@ const eslintConfig = [
     rules: {
       // Require semicolons
       "semi": ["error", "always"],
-      // "@typescript-eslint/semi": ["error", "always"],
+      "@typescript-eslint/@semi": ["error", "always"],
       // Other style rules for consistency
       "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
       "comma-dangle": ["error", "always-multiline"],
