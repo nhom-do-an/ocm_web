@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Quicksand } from 'next/font/google';
 import './globals.css';
 import { ReduxProvider } from '@/redux/provider';
@@ -70,14 +71,16 @@ export default function RootLayout({
       <body className={`${quicksand.variable} font-sans antialiased`}>
         <ReduxProvider>
           <AuthRestoreGuard />
-          <div className="relative flex min-h-screen flex-col">
-            <HeaderGuard />
-            <main className="flex-1">{children}</main>
-            <FooterGuard />
-          </div>
-          <ShoppingCart />
-          <BackToTop />
-          <ToastProvider />
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-center">Đang tải...</div></div>}>
+            <div className="relative flex min-h-screen flex-col">
+              <HeaderGuard />
+              <main className="flex-1">{children}</main>
+              <FooterGuard />
+            </div>
+            <ShoppingCart />
+            <BackToTop />
+            <ToastProvider />
+          </Suspense>
         </ReduxProvider>
       </body>
     </html>
