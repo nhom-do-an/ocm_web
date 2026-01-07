@@ -359,6 +359,19 @@ export interface GetListOrdersResponse {
   count: number;
 }
 
+// Order QR Payment types
+export interface OrderQRPaymentRequest {
+  beneficiary_account_id: number;
+}
+
+export interface OrderQRPaymentResponse {
+  qr_url: string;
+  description: string;
+  account_number: string;
+  account_name: string;
+  amount: number;
+}
+
 // Store types
 export interface StoreDetail {
   id: number;

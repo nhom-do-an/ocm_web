@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import { API_ENDPOINTS } from '@/constants/api';
-import { Order, OrderDetail, GetListOrdersResponse, ApiResponse } from '@/types/api';
+import { Order, OrderDetail, GetListOrdersResponse, ApiResponse, OrderQRPaymentRequest, OrderQRPaymentResponse } from '@/types/api';
 
 export const orderService = {
   // GET /orders - Lấy danh sách đơn hàng (Customer)
@@ -76,5 +76,18 @@ export const orderService = {
 
   trackOrder: async (orderNumber: string): Promise<ApiResponse<any>> => {
     return apiClient.get<any>(`/orders/track/${orderNumber}`);
+  },
+
+  // GET /orders/{orderId}/qr-payment - Lấy mã QR thanh toán cho đơn hàng
+  getOrderQRPayment: async (orderId: number | string, params: OrderQRPaymentRequest): Promise<OrderQRPaymentResponse> => {
+    const queryParams = new URLSearchParams();
+    queryParams.append('beneficiary_account_id', params.beneficiary_account_id.toString());
+
+    const url = `${API_ENDPOINTS.ORDERS.QR_PAYMENT(orderId)}?${queryParams.toString()}`;
+    const response = await apiClient.get<OrderQRPaymentResponse>(url);
+    if (!response || !response.success) {
+      throw new Error(response?.message || 'Failed to fetch QR payment');
+    }
+    return response.data;
   },
 };
