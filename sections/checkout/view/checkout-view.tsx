@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { fetchCart } from '@/redux/slices/cartSlice';
+import type { RootState } from '@/redux/store';
 import { logoutUser } from '@/redux/slices/authSlice';
 import {
   addressService,
@@ -31,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SITE_CONFIG, CONTACT_INFO, POLICIES } from '@/constants/site';
+import { SITE_CONFIG, CONTACT_INFO } from '@/constants/site';
 import { toast } from 'react-toastify';
 import { ArrowLeft } from 'lucide-react';
 import {
@@ -46,8 +47,8 @@ export default function CheckoutView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const { items, total, itemCount } = useAppSelector((state) => state.cart);
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { items, total, itemCount } = useAppSelector((state: RootState) => state.cart);
+  const { user, isAuthenticated } = useAppSelector((state: RootState) => state.auth);
 
   // Checkout token from URL
   const checkoutToken = searchParams?.get('token') || '';
