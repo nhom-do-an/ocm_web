@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { CollectionDetail } from '@/types/collection';
+import Image from 'next/image';
 
 interface CollectionGridProps {
   collections: CollectionDetail[];
@@ -35,10 +36,12 @@ function CollectionGridComponent({ collections }: CollectionGridProps) {
             >
               <Card className="gap-2 group overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20 hover:border-red-500 border-2 border-gray-200 w-48">
                 <div className="relative flex items-center justify-center bg-white">
-                  <img
-                    src={collection.image?.url}
+                  <Image
+                    src={collection.image?.url || '/images/placeholder.jpg'}
                     alt={collection.name}
                     className="w-[60px] h-[60px] object-contain"
+                    width={60}
+                    height={60}
                   />
                 </div>
 

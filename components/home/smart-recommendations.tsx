@@ -17,7 +17,7 @@ interface SmartRecommendationsProps {
  * Combines Next Item predictions with Recommendations
  * Shows next items first, then fills remaining slots with recommendations
  */
-export function SmartRecommendations({ 
+export function SmartRecommendations({
   title = "💡 CÓ THỂ BẠN QUAN TÂM",
   nextItemsLimit = 4,
   recommendationsLimit = 8,
@@ -31,11 +31,11 @@ export function SmartRecommendations({
     const fetchSmartRecommendations = async () => {
       try {
         setLoading(true);
-        
+
         // Try to get next item predictions first
         let nextItemProducts: ProductDetail[] = [];
-        let nextItemIds: Set<number> = new Set();
-        
+        const nextItemIds: Set<number> = new Set();
+
         try {
           const nextItemsResponse = await aiService.getNextItems(nextItemsLimit);
           if (nextItemsResponse.products && nextItemsResponse.products.length > 0) {
@@ -50,7 +50,7 @@ export function SmartRecommendations({
         // Get recommendations to fill remaining slots
         const remainingSlots = recommendationsLimit - nextItemProducts.length;
         let recommendationProducts: ProductDetail[] = [];
-        
+
         if (remainingSlots > 0) {
           try {
             const recsResponse = await aiService.getRecommendations(recommendationsLimit);
@@ -68,7 +68,7 @@ export function SmartRecommendations({
         // Combine: next items first, then recommendations
         const combinedProducts = [...nextItemProducts, ...recommendationProducts];
         setProducts(combinedProducts);
-        
+
       } catch (error) {
         console.error('Error fetching smart recommendations:', error);
         setProducts([]);

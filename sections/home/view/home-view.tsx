@@ -7,10 +7,8 @@ import { ServiceBenefits } from '@/components/home/service-benefits';
 import { AIProductSection } from '@/components/home/ai-product-section';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { fetchProducts } from '@/redux/slices/productsSlice';
-import { ProductDetail } from '@/types/product';
 import { CollectionDetail } from '@/types/collection';
 import { collectionsService } from '@/services/api';
-import { ProductGrid } from '@/components/product/product-grid';
 
 export default function HomeView() {
   const dispatch = useAppDispatch();
@@ -63,14 +61,14 @@ export default function HomeView() {
 
       <div className="container mx-auto px-4 py-8">
         {/* AI Trending Products - HOT */}
-        <AIProductSection 
+        <AIProductSection
           title="🔥 SẢN PHẨM HOT - ĐANG THỊNH HÀNH"
           type="trending"
           limit={8}
         />
 
         {/* AI Personalized Recommendations */}
-        <AIProductSection 
+        <AIProductSection
           title="💡 CÓ THỂ BẠN QUAN TÂM"
           type="recommendations"
           limit={8}

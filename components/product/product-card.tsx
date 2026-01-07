@@ -17,6 +17,7 @@ import {
   getProductStock,
 } from "@/utils/product";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 interface ProductCardProps {
   product: ProductDetail;
@@ -77,7 +78,7 @@ function ProductCardComponent({ product, size = "md", className = "" }: ProductC
     if (!hasColorAttribute) return [];
     const colorAttribute = product.attributes.find((attr) => attr.name === "Màu sắc");
     if (!colorAttribute) return [];
-    
+
     const variantList: any[] = [];
     colorAttribute.values.forEach((colorValue: any) => {
       const variant = product.variants.find(
@@ -97,12 +98,12 @@ function ProductCardComponent({ product, size = "md", className = "" }: ProductC
 
   const variantImageIndex = useMemo(() => {
     if (!hasColorAttribute || !currentVariant) return -1;
-    
+
     if (currentVariant.image_id) {
       const id = currentVariant.image_id;
       return productImages.findIndex((img: any) => String(img.id) === String(id));
     }
-    
+
     const url = getVariantImageUrl(currentVariant);
     if (url) {
       return productImages.findIndex((img: any) => String(img.url) === String(url));
@@ -177,23 +178,25 @@ function ProductCardComponent({ product, size = "md", className = "" }: ProductC
         >
           <Link href={`/product/${product.alias}`} className="block relative w-full h-full overflow-hidden">
             {/* Main Image */}
-            <img
+            <Image
               src={userSelectedVariant && selectedVariantUrl ? selectedVariantUrl : mainImage1}
               alt={product.name}
-              className={`w-full h-full object-cover transition-all duration-300 cursor-pointer ${
-                isHover && mainImage2 && !userSelectedVariant ? 'opacity-0 absolute inset-0 scale-100' : 'opacity-100 group-hover:scale-105'
-              }`}
+              className={`w-full h-full object-cover transition-all duration-300 cursor-pointer ${isHover && mainImage2 && !userSelectedVariant ? 'opacity-0 absolute inset-0 scale-100' : 'opacity-100 group-hover:scale-105'
+                }`}
               loading="lazy"
+              width={100}
+              height={100}
             />
             {/* Second Image on Hover - Preloaded (rendered in DOM to preload) */}
             {mainImage2 && !userSelectedVariant && (
-              <img
+              <Image
                 src={mainImage2}
                 alt={product.name}
-                className={`w-full h-full object-cover transition-all duration-300 cursor-pointer absolute inset-0 ${
-                  isHover ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
-                }`}
+                className={`w-full h-full object-cover transition-all duration-300 cursor-pointer absolute inset-0 ${isHover ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
+                  }`}
                 loading="eager"
+                width={100}
+                height={100}
               />
             )}
           </Link>
@@ -219,7 +222,7 @@ function ProductCardComponent({ product, size = "md", className = "" }: ProductC
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col">
                   <span className="text-sm sm:text-base md:text-lg font-bold text-red-600 truncate">{formatPrice(price)}</span>
-                {comparePrice && comparePrice > price && (
+                  {comparePrice && comparePrice > price && (
                     <span className="text-xs sm:text-sm text-gray-500 line-through">{formatPrice(comparePrice)}</span>
                   )}
                 </div>
@@ -269,7 +272,7 @@ function ProductCardComponent({ product, size = "md", className = "" }: ProductC
                       }}
                       className={`w-6 h-6 rounded-full overflow-hidden border ${isSelected ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-200'} p-0`}
                     >
-                      <img src={url} className="w-full h-full object-cover" alt={`variant-${v.id}`} />
+                      <Image src={url} width={24} height={24} className="w-full h-full object-cover" alt={`variant-${v.id}`} />
                     </button>
                   );
                 })

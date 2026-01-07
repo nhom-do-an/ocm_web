@@ -6,16 +6,16 @@ import Link from 'next/link';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { fetchCart } from '@/redux/slices/cartSlice';
 import { logoutUser } from '@/redux/slices/authSlice';
-import { 
-  addressService, 
-  regionsService, 
+import {
+  addressService,
+  regionsService,
   checkoutService,
   paymentMethodsService,
 } from '@/services/api';
-import { 
-  AddressDetail, 
-  CheckoutDetail, 
-  ShippingRate, 
+import {
+  AddressDetail,
+  CheckoutDetail,
+  ShippingRate,
   PaymentMethodDetail,
   UpdateCheckoutInfoRequest,
 } from '@/types/api';
@@ -40,6 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import Image from 'next/image';
 
 export default function CheckoutView() {
   const router = useRouter();
@@ -293,7 +294,7 @@ export default function CheckoutView() {
     async (addr: AddressDetail) => {
       // Deep copy để tránh mutate object gốc
       const addressCopy = JSON.parse(JSON.stringify(addr));
-      
+
       const updatedForm = {
         first_name: addressCopy.first_name || '',
         last_name: addressCopy.last_name || '',
@@ -376,7 +377,7 @@ export default function CheckoutView() {
             if (existingAddr) {
               const existingAddrCopy = JSON.parse(JSON.stringify(existingAddr));
               setSelectedAddressId(existingAddrCopy.id);
-              
+
               // Apply address inline để tránh dependency issue
               const updatedForm = {
                 first_name: existingAddrCopy.first_name || '',
@@ -390,14 +391,14 @@ export default function CheckoutView() {
                 notes: notesRef.current || '',
               };
               setFormData(updatedForm);
-              
+
               if (existingAddrCopy.province_code) {
                 await loadDistricts(existingAddrCopy.province_code);
                 if (existingAddrCopy.district_code) {
                   await loadWards(existingAddrCopy.district_code);
                 }
               }
-              
+
               setIsCheckoutAddressDetached(false);
               await refreshShippingRates(updatedForm);
             }
@@ -408,7 +409,7 @@ export default function CheckoutView() {
             // Đặt mặc định là không chọn địa chỉ nào
             setSelectedAddressId(null);
             setIsCheckoutAddressDetached(true);
-            
+
             // Nếu có thông tin user, pre-fill email và tên
             if (user) {
               setFormData({
@@ -424,7 +425,7 @@ export default function CheckoutView() {
               });
             }
           }
-          
+
           setHasInitializedAddress(true);
         }
       } catch (error) {
@@ -483,14 +484,14 @@ export default function CheckoutView() {
         // Khi user thay đổi thông tin, phải gửi shipping_address_id = null 
         // để API biết đây là địa chỉ mới, KHÔNG ghi đè vào địa chỉ đã lưu
         const payload = buildCheckoutUpdatePayload(updatedFormData, overrides);
-        
+
         // QUAN TRỌNG: Luôn gửi shipping_address_id = null
         if (field !== 'notes') {
           payload.shipping_address_id = null;
         }
-        
+
         await checkoutService.updateCheckout(checkoutToken, payload);
-        
+
         if (shouldReloadShippingRates) {
           await refreshShippingRates(updatedFormData);
         } else {
@@ -544,7 +545,7 @@ export default function CheckoutView() {
         shipping_rate_id: selectedShippingRateId,
         note: formData.notes,
       };
-      
+
       // Nếu user đã chọn địa chỉ từ sổ địa chỉ
       if (selectedAddressId !== null) {
         updateData.shipping_address_id = selectedAddressId;
@@ -565,12 +566,12 @@ export default function CheckoutView() {
 
       // Complete checkout
       const order = await checkoutService.completeCheckout(checkoutToken);
-      
+
       toast.success('Đặt hàng thành công!');
-      
+
       // Clear cart after successful checkout
       dispatch(fetchCart());
-      
+
       // Redirect đến trang đặt hàng thành công
       router.push(`/checkout/success?orderId=${order.id}`);
     } catch (error: any) {
@@ -767,7 +768,7 @@ Trân trọng cảm ơn.`
               {/* Left: Shipping Information */}
               <div className="space-y-4">
                 <h2 className="text-xl font-bold">Thông tin nhận hàng</h2>
-                
+
                 {addresses.length > 0 && (
                   <div>
                     <Label htmlFor="address_select">Số địa chỉ</Label>
@@ -777,7 +778,7 @@ Trân trọng cảm ơn.`
                         if (value === 'other') {
                           setSelectedAddressId(null);
                           setIsCheckoutAddressDetached(true);
-                          
+
                           const newFormData = {
                             first_name: user?.first_name || '',
                             last_name: user?.last_name || '',
@@ -792,7 +793,7 @@ Trân trọng cảm ơn.`
                           setFormData(newFormData);
                           setDistricts([]);
                           setWards([]);
-                          
+
                           if (checkoutToken) {
                             try {
                               // CHỈ gửi shipping_address_id = null, KHÔNG gửi các field khác
@@ -800,7 +801,7 @@ Trân trọng cảm ơn.`
                               await checkoutService.updateCheckout(checkoutToken, {
                                 shipping_address_id: null,
                               });
-                              
+
                               // Clear shipping rates vì chưa có địa chỉ đầy đủ
                               setShippingRates([]);
                               setSelectedShippingRateId(null);
@@ -1135,10 +1136,12 @@ Trân trọng cảm ơn.`
                   {displayItems.map((item: any) => (
                     <div key={item.id} className="flex gap-3">
                       <div className="relative w-16 h-16 bg-gray-100 rounded-lg overflow-visible flex-shrink-0 border border-gray-300">
-                        <img
+                        <Image
                           src={item.image_url || '/images/placeholder.jpg'}
                           alt={item.product_name || 'product'}
                           className="w-full h-full object-cover rounded-lg"
+                          width={64}
+                          height={64}
                         />
                         <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg border-2 border-white z-10">
                           {item.quantity ?? 1}
@@ -1184,10 +1187,10 @@ Trân trọng cảm ơn.`
                   <div className="flex justify-between text-sm">
                     <span>Phí vận chuyển:</span>
                     <span className={checkout.shipping_rate?.price === 0 ? 'text-green-600' : ''}>
-                      {checkout.shipping_rate 
-                        ? (checkout.shipping_rate.price === 0 
-                            ? 'Miễn phí' 
-                            : `${checkout.shipping_rate.price.toLocaleString()}đ`)
+                      {checkout.shipping_rate
+                        ? (checkout.shipping_rate.price === 0
+                          ? 'Miễn phí'
+                          : `${checkout.shipping_rate.price.toLocaleString()}đ`)
                         : 'Chưa chọn'}
                     </span>
                   </div>

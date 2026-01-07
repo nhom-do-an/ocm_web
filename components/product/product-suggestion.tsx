@@ -1,8 +1,8 @@
 "use client"
 
 import { memo, useMemo } from 'react'
-import Link from 'next/link'
 import { ProductDetail } from '@/types/product'
+import Image from 'next/image';
 
 interface Props {
   product: ProductDetail
@@ -13,12 +13,12 @@ function ProductSuggestionComponent({ product }: Props) {
     () => product.images?.[0]?.url || '/images/placeholder.jpg',
     [product.images]
   );
-  
+
   const price = useMemo(
     () => product.variants?.[0]?.price ?? 0,
     [product.variants]
   );
-  
+
   const compare = useMemo(
     () => product.variants?.[0]?.compare_at_price ?? 0,
     [product.variants]
@@ -32,7 +32,7 @@ function ProductSuggestionComponent({ product }: Props) {
   return (
     <div className="flex items-center gap-3">
       <div className="w-12 h-12 flex items-center justify-center bg-white overflow-hidden rounded">
-        <img src={image} alt={product.name} className="object-cover w-full h-full" />
+        <Image src={image} alt={product.name} className="object-cover w-full h-full" width={48} height={48} />
       </div>
 
       <div className="flex-1 min-w-0">

@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import React, { useEffect } from 'react';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
@@ -10,6 +10,7 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { removeLineItemApi, updateLineItemApi, setCartOpen, fetchCart } from '@/redux/slices/cartSlice';
 import { formatPrice } from '@/utils';
 import { startCheckoutFromCart } from '@/lib/checkout';
+import Image from 'next/image';
 
 export function ShoppingCart() {
   const dispatch = useAppDispatch();
@@ -82,10 +83,12 @@ export function ShoppingCart() {
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
-                      <img
+                      <Image
                         src={item.image_url || '/images/placeholder.jpg'}
                         alt={item.product_name || 'product'}
                         className="w-full h-full object-cover"
+                        width={64}
+                        height={64}
                       />
                     </div>
 
@@ -94,10 +97,10 @@ export function ShoppingCart() {
                         {item.product_name ?? 'Product'}
                       </h3>
 
-            <div className="text-xs text-gray-500">
-              {item.variant_title !== 'Default Title' ? <span>{item.variant_title}</span> : <span>-</span>}
-            </div>
-                      
+                      <div className="text-xs text-gray-500">
+                        {item.variant_title !== 'Default Title' ? <span>{item.variant_title}</span> : <span>-</span>}
+                      </div>
+
 
                       <div className="flex items-center justify-between">
                         <div className="text-sm font-medium text-red-500">

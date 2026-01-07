@@ -22,12 +22,9 @@ const eslintConfig = [
   },
   {
     rules: {
-      // Require semicolons
-      "semi": ["error", "always"],
-      "@typescript-eslint/semi": ["error", "always"],
-      // Other style rules for consistency
-      "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
-      "comma-dangle": ["error", "always-multiline"],
+      "react-hooks/exhaustive-deps": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 ];

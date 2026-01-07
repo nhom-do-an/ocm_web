@@ -259,7 +259,7 @@ export function Header() {
                             router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`)
                           }}
                         >
-                          Xem tất cả kết quả cho "{searchQuery}"
+                          Xem tất cả kết quả cho &quot;{searchQuery}&quot;
                         </button>
                       </li>
                     </ul>

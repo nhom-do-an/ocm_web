@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { removeLineItemApi, updateLineItemApi, clearCartApi, fetchCart } from '@/redux/slices/cartSlice';
 import { useRouter } from 'next/navigation';
 import { startCheckoutFromCart } from '@/lib/checkout';
+import Image from 'next/image';
 
 export default function CartView() {
   const dispatch = useAppDispatch();
@@ -77,11 +78,13 @@ export default function CartView() {
                 <CardContent className="p-4">
                   <div className="flex gap-4">
                     {/* Product Image */}
-                      <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      <img
+                    <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      <Image
                         src={item.image_url || '/images/placeholder.jpg'}
                         alt={item.product_name || 'product'}
                         className="w-full h-full object-cover"
+                        width={96}
+                        height={96}
                       />
                     </div>
 
@@ -90,18 +93,18 @@ export default function CartView() {
                       <h3 className="font-medium mb-2">{item.product_name ?? 'Product'}</h3>
 
                       <div className="text-sm text-gray-600 mb-2">
-                          {item.variant_title !== 'Default Title' ? <span>{item.variant_title}</span> : <span>-</span>}
+                        {item.variant_title !== 'Default Title' ? <span>{item.variant_title}</span> : <span>-</span>}
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <span className="font-bold text-red-600">{(item.price ?? 0).toLocaleString()}đ</span>
-                            {((item.original_price ?? 0) > (item.price ?? 0)) && (
-                              <span className="text-sm text-gray-400 line-through">
-                                {(item.original_price ?? 0).toLocaleString()}đ
-                              </span>
-                            )}
-                          </div>
+                          <span className="font-bold text-red-600">{(item.price ?? 0).toLocaleString()}đ</span>
+                          {((item.original_price ?? 0) > (item.price ?? 0)) && (
+                            <span className="text-sm text-gray-400 line-through">
+                              {(item.original_price ?? 0).toLocaleString()}đ
+                            </span>
+                          )}
+                        </div>
 
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-2">

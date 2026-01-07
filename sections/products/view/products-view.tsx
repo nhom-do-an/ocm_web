@@ -60,7 +60,7 @@ export default function ProductsView() {
         {q && (
           <div className="mb-6">
             <h2 className="text-xl font-semibold">
-              Kết quả tìm kiếm cho "{q}"
+              Kết quả tìm kiếm cho&quot;{q}&quot;
               {totalProducts && totalProducts > 0 ? `: ${totalProducts} sản phẩm` : ''}
             </h2>
           </div>

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle2, Package, Home, ShoppingBag } from 'lucide-react';
 import { toast } from 'react-toastify';
+import Image from 'next/image';
 
 export default function CheckoutSuccessView() {
   const router = useRouter();
@@ -149,11 +150,11 @@ export default function CheckoutSuccessView() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Trạng thái:</span>
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                  {order.status === OrderStatus.Open ? 'Mở' : 
-                   order.status === OrderStatus.Confirmed ? 'Đã xác nhận' :
-                   order.status === OrderStatus.Completed ? 'Hoàn thành' :
-                   order.status === OrderStatus.Canceled ? 'Đã hủy' :
-                   order.status === OrderStatus.Closed ? 'Đã đóng' : order.status}
+                  {order.status === OrderStatus.Open ? 'Mở' :
+                    order.status === OrderStatus.Confirmed ? 'Đã xác nhận' :
+                      order.status === OrderStatus.Completed ? 'Hoàn thành' :
+                        order.status === OrderStatus.Canceled ? 'Đã hủy' :
+                          order.status === OrderStatus.Closed ? 'Đã đóng' : order.status}
                 </span>
               </div>
               {order.shipping_address && (
@@ -183,10 +184,12 @@ export default function CheckoutSuccessView() {
               {order.line_items?.map((item: any, index: number) => (
                 <div key={index} className="flex gap-4 pb-4 border-b last:border-0">
                   <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-300">
-                    <img
+                    <Image
                       src={item.image_url || '/images/placeholder.jpg'}
                       alt={item.product_name || 'product'}
                       className="w-full h-full object-cover"
+                      width={80}
+                      height={80}
                     />
                     <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg border-2 border-white z-10">
                       {item.quantity || 1}

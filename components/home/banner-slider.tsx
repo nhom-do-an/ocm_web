@@ -9,6 +9,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from '@/components/ui/carousel';
+import Image from 'next/image';
 
 const banners = [
   {
@@ -43,14 +44,14 @@ export function BannerSlider() {
     <div className="relative w-full h-full overflow-hidden rounded-lg">
       <Carousel
         opts={{ loop: true }}
-        plugins={[Autoplay({ delay: 3000})]}
+        plugins={[Autoplay({ delay: 3000 })]}
         setApi={setEmblaApi}
         className="h-full"
       >
         <CarouselContent className="h-full">
           {banners.map((banner) => (
             <CarouselItem key={banner.id} className="w-full h-full flex-shrink-0">
-              <img src={banner.image} alt={banner.alt} className="w-full h-full object-cover" />
+              <Image src={banner.image} alt={banner.alt} className="w-full h-full object-cover" width={800} height={400} />
             </CarouselItem>
           ))}
         </CarouselContent>
@@ -80,9 +81,8 @@ export function BannerSlider() {
         {banners.map((_, index) => (
           <button
             key={index}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              index === selectedIndex ? 'bg-white' : 'bg-white/50'
-            }`}
+            className={`w-3 h-3 rounded-full transition-colors ${index === selectedIndex ? 'bg-white' : 'bg-white/50'
+              }`}
             onClick={() => goToSlide(index)}
           />
         ))}

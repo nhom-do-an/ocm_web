@@ -17,6 +17,8 @@ import { FaFacebookF } from 'react-icons/fa'
 import { BsCart4 } from "react-icons/bs";
 import { Home } from 'lucide-react'
 import { startCheckoutFromCart } from '@/lib/checkout'
+import Link from "next/link"
+import Image from "next/image"
 
 interface CollectionViewProps {
   alias: string
@@ -94,7 +96,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
   const handleAddToCart = useCallback(() => {
     if (currentProduct) {
       const currentVariant = currentProduct.variants && currentProduct.variants[selectedVariantIndex]
-      dispatch(addToCartApi({quantity: quantity,variant_id: currentVariant?.id }));
+      dispatch(addToCartApi({ quantity: quantity, variant_id: currentVariant?.id }));
       toast.success('Thêm vào giỏ hàng thành công!');
     }
   }, [currentProduct, selectedVariantIndex, quantity, dispatch])
@@ -168,24 +170,24 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
     () => currentProduct ? getProductPrice(currentProduct, selectedVariantIndex) : 0,
     [currentProduct, selectedVariantIndex]
   )
-  
+
   const comparePrice = useMemo(
     () => currentProduct ? getProductComparePrice(currentProduct, selectedVariantIndex) : null,
     [currentProduct, selectedVariantIndex]
   )
-  
+
   const stock = useMemo(
     () => currentProduct ? getProductStock(currentProduct, selectedVariantIndex) : 0,
     [currentProduct, selectedVariantIndex]
   )
-  
+
   const sku = useMemo(
     () => currentProduct ? getProductVariantSKU(currentProduct, selectedVariantIndex) : '',
     [currentProduct, selectedVariantIndex]
   )
-  
+
   const isInStock = useMemo(() => stock > 0, [stock])
-  
+
   const discountPercentage = useMemo(
     () => typeof comparePrice === 'number' && comparePrice > price
       ? Math.round(((comparePrice - price) / comparePrice) * 100)
@@ -257,7 +259,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
       content = rawContent
       spec = ''
     }
-    
+
     return { contentHtml: content, specHtml: spec }
   }, [currentProduct])
 
@@ -285,10 +287,10 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
       <nav className="mb-6 text-sm">
         <ol className="flex items-center space-x-2">
           <li>
-            <a href="/" className="text-gray-900 hover:text-red-500 flex items-center gap-1">
+            <Link href="/" className="text-gray-900 hover:text-red-500 flex items-center gap-1">
               <Home className="h-4 w-4 text-red-500" />
               Trang chủ
-            </a>
+            </Link>
           </li>
           {primaryCollection && (
             <>
@@ -322,10 +324,12 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
                 {currentProduct.images.map((image, index) => (
                   <CarouselItem key={index}>
                     <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                      <img
+                      <Image
                         src={image.url || "/placeholder.jpg"}
                         alt={currentProduct.name}
                         className="w-full h-full object-cover"
+                        width={600}
+                        height={600}
                       />
                     </div>
                   </CarouselItem>
@@ -348,14 +352,15 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
                           setSelectedImageIndex(index)
                           mainCarouselApi?.scrollTo(index)
                         }}
-                        className={`w-full aspect-square border-2 rounded-lg overflow-hidden transition-all ${
-                          selectedImageIndex === index ? "border-red-500 ring-2 ring-red-300" : "border-gray-300"
-                        }`}
+                        className={`w-full aspect-square border-2 rounded-lg overflow-hidden transition-all ${selectedImageIndex === index ? "border-red-500 ring-2 ring-red-300" : "border-gray-300"
+                          }`}
                       >
-                        <img
+                        <Image
                           src={image.url || "/placeholder.jpg"}
                           alt={`${currentProduct.name} ${index + 1}`}
                           className="w-full h-full object-cover"
+                          width={150}
+                          height={150}
                         />
                       </button>
                     </CarouselItem>
@@ -421,7 +426,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
 
           {/* SKU */}
           <div className="mb-6 flex gap-2">
-            <span className="font-bold">Mã sản phẩm:</span> 
+            <span className="font-bold">Mã sản phẩm:</span>
             <span className="text-red-500">{sku}</span>
           </div>
 
@@ -437,26 +442,27 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
                         const variant = validVariants.find(
                           (v) => v.option1 === value || v.option2 === value || v.option3 === value,
                         )
-                            return (
-                              <button
-                                key={String(value)}
-                                onClick={() => handleVariantChange(attribute.name, String(value))}
-                                className={`cursor-pointer flex items-center gap-2 p-2 rounded-lg border-2 transition-all ${
-                                  (activeVariant && (activeVariant[`option${attribute.position}` as keyof typeof activeVariant] === value))
-                                    ? "border-red-500 bg-red-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                {attribute.name === 'Màu sắc' && variant?.image && (
-                                  <img
-                                    src={variant.image.url || "/placeholder.jpg"}
-                                    alt={String(value)}
-                                    className="w-10 h-10 object-cover rounded-full flex-shrink-0"
-                                  />
-                                )}
-                                <span className="text-sm font-medium">{String(value)}</span>
-                              </button>
-                            )
+                        return (
+                          <button
+                            key={String(value)}
+                            onClick={() => handleVariantChange(attribute.name, String(value))}
+                            className={`cursor-pointer flex items-center gap-2 p-2 rounded-lg border-2 transition-all ${(activeVariant && (activeVariant[`option${attribute.position}` as keyof typeof activeVariant] === value))
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300 hover:border-gray-400"
+                              }`}
+                          >
+                            {attribute.name === 'Màu sắc' && variant?.image && (
+                              <Image
+                                src={variant.image.url || "/placeholder.jpg"}
+                                alt={String(value)}
+                                className="w-10 h-10 object-cover rounded-full flex-shrink-0"
+                                width={40}
+                                height={40}
+                              />
+                            )}
+                            <span className="text-sm font-medium">{String(value)}</span>
+                          </button>
+                        )
                       })}
                   </div>
                 </div>
@@ -542,7 +548,7 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
                 />
               </CardContent>
             </Card>
-          ): (
+          ) : (
             <Card className="mt-4">
               <CardContent
                 className="
@@ -580,98 +586,98 @@ export default function ProductDetailView({ alias }: CollectionViewProps) {
 
       {currentProduct.content && (
         <div className="mt-6 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              <div className="lg:col-span-3">
-                <Card>
-                  <CardContent className="p-4">
-                    <h3 className="font-bold mb-2">Mô tả sản phẩm</h3>
-                      <div className="relative">
-                        <div
-                          className={`text-gray-700 transition-all ${descExpanded ? '' : 'max-h-40 overflow-hidden'}`}
-                          dangerouslySetInnerHTML={{ __html: contentHtml || currentProduct.content }}
-                        />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="lg:col-span-3">
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-bold mb-2">Mô tả sản phẩm</h3>
+                  <div className="relative">
+                    <div
+                      className={`text-gray-700 transition-all ${descExpanded ? '' : 'max-h-40 overflow-hidden'}`}
+                      dangerouslySetInnerHTML={{ __html: contentHtml || currentProduct.content }}
+                    />
 
-                        {!descExpanded ? (
-                          <>
-                            <div className="absolute left-0 right-0 bottom-0 h-20 pointer-events-none">
-                              <div className="h-full w-full bg-gradient-to-t from-white to-transparent" />
-                            </div>
-
-                            <div className="absolute left-0 right-0 bottom-2 flex justify-center pointer-events-none">
-                              <button
-                                onClick={() => setDescExpanded(true)}
-                                aria-expanded={descExpanded}
-                                className="pointer-events-auto px-3 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:bg-gray-50 text-sm font-medium cursor-pointer transition-shadow duration-150 hover:shadow-sm hover:shadow-red-500"
-                                title="Xem thêm"
-                              >
-                                Xem thêm
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="mt-3 flex justify-center">
-                            <button
-                              onClick={() => setDescExpanded(false)}
-                              aria-expanded={descExpanded}
-                              className="px-3 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:bg-gray-50 text-sm font-medium cursor-pointer transition-shadow duration-150 hover:shadow-sm hover:shadow-red-500"
-                              title="Thu gọn"
-                            >
-                              Thu gọn
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="lg:col-span-1">
-                <Card>
-                  <CardContent className="p-4">
-                    <h3 className="font-bold mb-2">Thông số kỹ thuật</h3>
-                      <div>
-                        <div className="overflow-hidden rounded-lg bg-white border [&>div>table]:w-full [&>div>table]:border [&>div>table]:border-gray-200 [&>div>table>tbody>tr:nth-child(odd)]:bg-gray-100 [&>div>table>tbody>tr:nth-child(even)]:bg-gray-50 [&>div>table>tr>td]:px-3 [&>div>table>tr>td]:py-2">
-                          {specHtml ? (
-                            <div className="p-0" dangerouslySetInnerHTML={{ __html: specHtml }} />
-                          ) : (
-                            <div className="p-0">
-                              <table className="w-full border-collapse">
-                                <tbody>
-                                  <tr>
-                                    <td className="px-3 py-2 font-medium text-sm text-gray-700">Chất liệu</td>
-                                    <td className="px-3 py-2 text-sm text-gray-600">Đạt chuẩn</td>
-                                  </tr>
-                                  <tr>
-                                    <td className="px-3 py-2 font-medium text-sm text-gray-700">Kích thước</td>
-                                    <td className="px-3 py-2 text-sm text-gray-600">Đạt chuẩn</td>
-                                  </tr>
-                                  <tr>
-                                    <td className="px-3 py-2 font-medium text-sm text-gray-700">Trọng lượng</td>
-                                    <td className="px-3 py-2 text-sm text-gray-600">Đạt chuẩn</td>
-                                  </tr>
-                                  <tr>
-                                    <td className="px-3 py-2 font-medium text-sm text-gray-700">Bảo hành</td>
-                                    <td className="px-3 py-2 text-sm text-gray-600">24 tháng</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          )}
+                    {!descExpanded ? (
+                      <>
+                        <div className="absolute left-0 right-0 bottom-0 h-20 pointer-events-none">
+                          <div className="h-full w-full bg-gradient-to-t from-white to-transparent" />
                         </div>
+
+                        <div className="absolute left-0 right-0 bottom-2 flex justify-center pointer-events-none">
+                          <button
+                            onClick={() => setDescExpanded(true)}
+                            aria-expanded={descExpanded}
+                            className="pointer-events-auto px-3 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:bg-gray-50 text-sm font-medium cursor-pointer transition-shadow duration-150 hover:shadow-sm hover:shadow-red-500"
+                            title="Xem thêm"
+                          >
+                            Xem thêm
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-3 flex justify-center">
+                        <button
+                          onClick={() => setDescExpanded(false)}
+                          aria-expanded={descExpanded}
+                          className="px-3 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:bg-gray-50 text-sm font-medium cursor-pointer transition-shadow duration-150 hover:shadow-sm hover:shadow-red-500"
+                          title="Thu gọn"
+                        >
+                          Thu gọn
+                        </button>
                       </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-        {/* Smart Recommendations: Next Items + Recommendations */}
-        <div className="container mx-auto px-4 py-8">
-          <SmartRecommendations 
-            title="💡 CÓ THỂ BẠN QUAN TÂM"
-            nextItemsLimit={4}
-            recommendationsLimit={8}
-          />
-        </div>
+            <div className="lg:col-span-1">
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-bold mb-2">Thông số kỹ thuật</h3>
+                  <div>
+                    <div className="overflow-hidden rounded-lg bg-white border [&>div>table]:w-full [&>div>table]:border [&>div>table]:border-gray-200 [&>div>table>tbody>tr:nth-child(odd)]:bg-gray-100 [&>div>table>tbody>tr:nth-child(even)]:bg-gray-50 [&>div>table>tr>td]:px-3 [&>div>table>tr>td]:py-2">
+                      {specHtml ? (
+                        <div className="p-0" dangerouslySetInnerHTML={{ __html: specHtml }} />
+                      ) : (
+                        <div className="p-0">
+                          <table className="w-full border-collapse">
+                            <tbody>
+                              <tr>
+                                <td className="px-3 py-2 font-medium text-sm text-gray-700">Chất liệu</td>
+                                <td className="px-3 py-2 text-sm text-gray-600">Đạt chuẩn</td>
+                              </tr>
+                              <tr>
+                                <td className="px-3 py-2 font-medium text-sm text-gray-700">Kích thước</td>
+                                <td className="px-3 py-2 text-sm text-gray-600">Đạt chuẩn</td>
+                              </tr>
+                              <tr>
+                                <td className="px-3 py-2 font-medium text-sm text-gray-700">Trọng lượng</td>
+                                <td className="px-3 py-2 text-sm text-gray-600">Đạt chuẩn</td>
+                              </tr>
+                              <tr>
+                                <td className="px-3 py-2 font-medium text-sm text-gray-700">Bảo hành</td>
+                                <td className="px-3 py-2 text-sm text-gray-600">24 tháng</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Smart Recommendations: Next Items + Recommendations */}
+          <div className="container mx-auto px-4 py-8">
+            <SmartRecommendations
+              title="💡 CÓ THỂ BẠN QUAN TÂM"
+              nextItemsLimit={4}
+              recommendationsLimit={8}
+            />
+          </div>
         </div>
       )}
     </div>
