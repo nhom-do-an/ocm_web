@@ -15,3 +15,5 @@ export { checkoutService, CheckoutService } from './checkout';
 export { paymentMethodsService, PaymentMethodsService } from './payment-methods';
 export { beneficiaryAccountsService, BeneficiaryAccountsService } from './beneficiary-accounts';
 export { aiService } from './ai';
+export { bannersService } from './banners';
+export { contactsService } from './contacts';

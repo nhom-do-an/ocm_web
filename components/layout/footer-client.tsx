@@ -3,18 +3,47 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Facebook, Instagram, Youtube, Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { SITE_CONFIG, CONTACT_INFO, POLICIES } from '@/constants/site';
 import { Separator } from '@/components/ui/separator';
 import { FooterCollections } from './footer-collections';
 import { useAppSelector } from '@/hooks/redux';
+import { contactsService } from '@/services/api';
+import { Contact, ContactType } from '@/types/contact';
+
+const contactIcons: Record<ContactType, string> = {
+  facebook: '/icons/fb.png',
+  zalo: '/icons/zalo.png',
+  phone: '/icons/phone.png',
+};
+
+const contactLabels: Record<ContactType, string> = {
+  facebook: 'Messenger',
+  zalo: 'Zalo',
+  phone: 'Hotline',
+};
 
 export function FooterClient() {
   const [mounted, setMounted] = useState(false);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const { store, locations } = useAppSelector((state) => state.store);
 
   useEffect(() => {
     setMounted(true);
+
+    const fetchContacts = async () => {
+      try {
+        const response = await contactsService.getContacts();
+        if (response.success && response.data && Array.isArray(response.data)) {
+          const activeContacts = response.data.filter((c) => c.is_active);
+          setContacts(activeContacts);
+        }
+      } catch (error) {
+        console.error('Failed to fetch contacts:', error);
+      }
+    };
+
+    fetchContacts();
   }, []);
 
   // Only use store data after mounting to prevent hydration mismatch
@@ -27,16 +56,24 @@ export function FooterClient() {
   // Build full address from store data (only after mounting)
   const fullAddress = mounted && store
     ? [store.address, store.ward_name, store.district_name, store.province_name]
-        .filter(Boolean)
-        .join(', ')
+      .filter(Boolean)
+      .join(', ')
     : storeAddress;
 
   // Only show locations after mounting
   const displayLocations = mounted ? locations : [];
 
+  const handleContactClick = (contact: Contact) => {
+    if (contact.type === 'phone') {
+      window.location.href = `tel:${contact.value}`;
+    } else if (contact.link) {
+      window.open(contact.link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-gray-900 text-gray-300 w-screen">
+      <div className="container mx-auto px-4 py-8 lg:px-[100px] max-w-[1200px] ">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Company Info */}
           <div className="space-y-4">
@@ -53,17 +90,28 @@ export function FooterClient() {
               <h3 className="text-lg font-semibold text-white">{storeName}</h3>
             </div>
             <p className="text-sm text-gray-400">{SITE_CONFIG.description}</p>
-            <div className="flex space-x-4">
-              <Link href={SITE_CONFIG.links.facebook} className="text-gray-400 hover:text-white">
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link href={SITE_CONFIG.links.instagram} className="text-gray-400 hover:text-white">
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link href={SITE_CONFIG.links.youtube} className="text-gray-400 hover:text-white">
-                <Youtube className="h-5 w-5" />
-              </Link>
-            </div>
+
+            {/* Dynamic Contacts */}
+            {mounted && contacts.length > 0 && (
+              <div className=" flex gap-3 justify-start">
+                {contacts.map((contact) => (
+                  <button
+                    key={contact.id}
+                    onClick={() => handleContactClick(contact)}
+                    className="flex items-center hover:text-white transition-colors  text-left cursor-pointer"
+                  >
+                    <Image
+                      src={contactIcons[contact.type]}
+                      alt={contactLabels[contact.type]}
+                      width={20}
+                      height={20}
+                      className="flex-shrink-0 "
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
           </div>
 
           {/* Contact Info */}
@@ -90,6 +138,7 @@ export function FooterClient() {
                 <Clock className="h-4 w-4 flex-shrink-0" />
                 <span>{CONTACT_INFO.workingHours}</span>
               </div>
+
             </div>
           </div>
 
@@ -140,12 +189,12 @@ export function FooterClient() {
           </div>
         </div>
 
-        <Separator className="my-8 bg-gray-700" />
+        <Separator className="my-6 bg-gray-700" />
 
-        <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
-          <div className="text-sm text-gray-400">
+        <div className="flex  items-center justify-center space-y-2 md:flex-row md:space-y-0">
+          <span className="text-sm text-gray-400">
             © {new Date().getFullYear()} {storeName}. Tất cả quyền được bảo lưu.
-          </div>
+          </span>
         </div>
       </div>
     </footer>

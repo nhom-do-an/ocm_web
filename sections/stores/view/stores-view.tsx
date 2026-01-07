@@ -42,7 +42,7 @@ export default function StoresView() {
       )}
 
       {/* Stores Grid */}
-      {!locationsLoading && activeLocations.length > 0 ? (
+      {mounted && !locationsLoading && activeLocations.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {activeLocations.map((location) => (
             <Card key={location.id} className="hover:shadow-lg transition-shadow">
@@ -107,7 +107,7 @@ export default function StoresView() {
             </Card>
           ))}
         </div>
-      ) : !locationsLoading ? (
+      ) : mounted && !locationsLoading ? (
         <div className="text-center py-12 mb-12">
           <Store className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">Chưa có thông tin chi nhánh</p>

@@ -7,6 +7,7 @@ import HeaderGuard from '@/components/layout/header-guard'
 import FooterGuard from '@/components/layout/footer-guard'
 import { ShoppingCart } from '@/components/cart/shopping-cart';
 import { BackToTop } from '@/components/ui/back-to-top';
+import { FloatingContact } from '@/components/layout/floating-contact';
 import { SITE_CONFIG } from '@/constants/site';
 import ToastProvider from '@/components/ui/toast-provider';
 import AuthRestoreGuard from '@/components/layout/auth-restore-guard';
@@ -83,6 +84,7 @@ export default function RootLayout({
             </div>
             <ShoppingCart />
             <BackToTop />
+            <FloatingContact />
             <ToastProvider />
           </Suspense>
         </ReduxProvider>

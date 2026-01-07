@@ -10,21 +10,14 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import Image from 'next/image';
+import Link from 'next/link';
+import { Banner } from '@/types/banner';
 
-const banners = [
-  {
-    id: 1,
-    image: '/images/banners/banner1.jpg',
-    alt: 'Bộ sưu tập từ thiên nhiên Harmony',
-  },
-  {
-    id: 2,
-    image: '/images/banners/banner2.jpg',
-    alt: 'Bộ sưu tập từ thiên nhiên Mocha',
-  },
-];
+interface BannerSliderProps {
+  banners: Banner[];
+}
 
-export function BannerSlider() {
+export function BannerSlider({ banners }: BannerSliderProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [emblaApi, setEmblaApi] = useState<any>(undefined);
 
@@ -40,6 +33,34 @@ export function BannerSlider() {
   const goToNext = () => emblaApi?.scrollNext();
   const goToSlide = (index: number) => emblaApi?.scrollTo(index);
 
+  // Don't render if no banners
+  if (!banners || banners.length === 0) {
+    return null;
+  }
+
+  const renderBannerContent = (banner: Banner) => {
+    const imageElement = (
+      <Image
+        src={banner.image_url}
+        alt={banner.description || 'Banner'}
+        className="w-full h-full object-cover"
+        width={800}
+        height={400}
+        priority
+      />
+    );
+
+    if (banner.redirect_url) {
+      return (
+        <Link href={banner.redirect_url} className="block w-full h-full">
+          {imageElement}
+        </Link>
+      );
+    }
+
+    return imageElement;
+  };
+
   return (
     <div className="relative w-full h-full overflow-hidden rounded-lg">
       <Carousel
@@ -51,42 +72,46 @@ export function BannerSlider() {
         <CarouselContent className="h-full">
           {banners.map((banner) => (
             <CarouselItem key={banner.id} className="w-full h-full flex-shrink-0">
-              <Image src={banner.image} alt={banner.alt} className="w-full h-full object-cover" width={800} height={400} />
+              {renderBannerContent(banner)}
             </CarouselItem>
           ))}
         </CarouselContent>
       </Carousel>
 
-      {/* Navigation Arrows */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white h-10 w-10 p-0 rounded-full"
-        onClick={goToPrevious}
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </Button>
+      {/* Navigation Arrows - only show if more than 1 banner */}
+      {banners.length > 1 && (
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white h-10 w-10 p-0 rounded-full"
+            onClick={goToPrevious}
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white h-10 w-10 p-0 rounded-full"
-        onClick={goToNext}
-      >
-        <ChevronRight className="h-6 w-6" />
-      </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white h-10 w-10 p-0 rounded-full"
+            onClick={goToNext}
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
 
-      {/* Dots Indicator */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-        {banners.map((_, index) => (
-          <button
-            key={index}
-            className={`w-3 h-3 rounded-full transition-colors ${index === selectedIndex ? 'bg-white' : 'bg-white/50'
-              }`}
-            onClick={() => goToSlide(index)}
-          />
-        ))}
-      </div>
+          {/* Dots Indicator */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                className={`w-3 h-3 rounded-full transition-colors ${index === selectedIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                onClick={() => goToSlide(index)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

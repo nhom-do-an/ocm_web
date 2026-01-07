@@ -82,6 +82,7 @@ export const API_ENDPOINTS = {
   ORDERS: {
     LIST: '/orders',
     DETAIL: (id: number | string) => `/orders/${id}`,
+    QR_PAYMENT: (orderId: number | string) => `/orders/${orderId}/qr-payment`,
   },
 
   // Payment methods endpoints
@@ -102,10 +103,20 @@ export const API_ENDPOINTS = {
     NEXT_ITEMS: '/ai/next-items',
   },
 
+  // Banner endpoints
+  BANNERS: {
+    LIST: '/admin/banners',
+  },
+
+  // Contact endpoints
+  CONTACTS: {
+    LIST: '/admin/contacts',
+  },
+
   // Legacy endpoints for backward compatibility
   LEGACY: {
     ORDERS: '/orders',
-    ORDER_BY_ID: (orderId: string) => `/orders/${orderId}`,
+    ORDER_BY_ID: (orderId: string) => `/admin/orders/${orderId}`,
     CREATE_ORDER: '/orders',
     USER_PROFILE: '/user/profile',
     USER_ORDERS: '/user/orders',
