@@ -52,14 +52,14 @@ export default function HomeView() {
   return (
     <div className="bg-gray-50">
       {/* Banner Slider */}
-      <section className="container mx-auto py-4">
+      <section className="container mx-auto py-4 w-screen">
         <BannerSlider />
       </section>
 
       {/* Service Benefits */}
       <ServiceBenefits />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-3 lg:px-[100px]">
         {/* AI Trending Products - HOT */}
         <AIProductSection
           title="🔥 SẢN PHẨM HOT - ĐANG THỊNH HÀNH"

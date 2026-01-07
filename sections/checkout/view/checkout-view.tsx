@@ -49,6 +49,12 @@ export default function CheckoutView() {
   const dispatch = useAppDispatch();
   const { items, total, itemCount } = useAppSelector((state: RootState) => state.cart);
   const { user, isAuthenticated } = useAppSelector((state: RootState) => state.auth);
+  const { store } = useAppSelector((state: RootState) => state.store);
+
+  // Use store data if available, fallback to constants
+  const storeName = store?.name || SITE_CONFIG.name;
+  const storePhone = store?.phone || CONTACT_INFO.phone;
+  const storeLogo = store?.logo_url;
 
   // Checkout token from URL
   const checkoutToken = searchParams?.get('token') || '';
@@ -748,10 +754,23 @@ Trân trọng cảm ơn.`
           <div className="w-[70%] space-y-6">
             {/* Row 1: Logo */}
             <div className="flex items-center justify-center relative">
-              <Link href="/" className="flex items-center space-x-2">
-                <div className="w-40 h-12 bg-red-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">{SITE_CONFIG.name}</span>
-                </div>
+              <Link href="/" className="flex items-center space-x-3">
+                {storeLogo ? (
+                  <Image
+                    src={storeLogo}
+                    alt={storeName}
+                    width={48}
+                    height={48}
+                    className="h-12 w-auto object-contain"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">
+                      {storeName.charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <span className="text-xl font-bold text-gray-900">{storeName}</span>
               </Link>
               {isAuthenticated && (
                 <button
@@ -1116,8 +1135,8 @@ Trân trọng cảm ơn.`
                 </button>
                 <div className="ml-auto text-gray-600">
                   Liên hệ hỗ trợ đặt hàng:{' '}
-                  <a href={`tel:${CONTACT_INFO.phone}`} className="text-red-600 font-medium">
-                    {CONTACT_INFO.phone}
+                  <a href={`tel:${storePhone}`} className="text-red-600 font-medium">
+                    {storePhone}
                   </a>
                 </div>
               </div>

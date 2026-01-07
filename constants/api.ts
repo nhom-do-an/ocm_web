@@ -45,6 +45,11 @@ export const API_ENDPOINTS = {
     LIST: '/admin/locations',
   },
 
+  // Store endpoints
+  STORE: {
+    DETAIL: '/admin/store/detail',
+  },
+
   // File upload endpoints
   FILE: {
     UPLOAD: '/admin/file/upload',
@@ -90,8 +95,8 @@ export const API_ENDPOINTS = {
     LIST: '/admin/beneficiary-accounts',
   },
 
-   // AI endpoints
-   AI: {
+  // AI endpoints
+  AI: {
     TRENDING: '/ai/trending',
     RECOMMENDATIONS: '/ai/recommendations',
     NEXT_ITEMS: '/ai/next-items',

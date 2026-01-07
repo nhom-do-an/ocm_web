@@ -5,6 +5,7 @@ export { productsService } from './products';
 export { collectionsService } from './collections';
 export { variantsService } from './variants';
 export { locationsService } from './locations';
+export { storeService } from './store';
 export { regionsService } from './regions';
 export { fileService, FileService } from './files';
 export { cartService } from './cart';

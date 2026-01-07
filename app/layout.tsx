@@ -10,6 +10,8 @@ import { BackToTop } from '@/components/ui/back-to-top';
 import { SITE_CONFIG } from '@/constants/site';
 import ToastProvider from '@/components/ui/toast-provider';
 import AuthRestoreGuard from '@/components/layout/auth-restore-guard';
+import StoreInitializer from '@/components/layout/store-initializer';
+import DynamicFavicon from '@/components/layout/dynamic-favicon';
 const quicksand = Quicksand({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
@@ -71,6 +73,8 @@ export default function RootLayout({
       <body className={`${quicksand.variable} font-sans antialiased`}>
         <ReduxProvider>
           <AuthRestoreGuard />
+          <StoreInitializer />
+          <DynamicFavicon />
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-center">Đang tải...</div></div>}>
             <div className="relative flex min-h-screen flex-col">
               <HeaderGuard />

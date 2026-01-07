@@ -8,8 +8,8 @@ import {
 import { ApiResponse, ApiError } from '@/types/api';
 
 class AuthManager {
-  private static ACCESS_TOKEN_KEY = 'access_token';
-  private static REFRESH_TOKEN_KEY = 'refresh_token';
+  private static ACCESS_TOKEN_KEY = 'cus_access_token';
+  private static REFRESH_TOKEN_KEY = 'cus_refresh_token';
 
   static getAccessToken(): string | null {
     if (typeof window === 'undefined') return null;

@@ -3,6 +3,7 @@
 import type React from "react"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useDebounce } from '@/hooks/useDebounce'
 import { productsService } from '@/services/api'
@@ -35,6 +36,7 @@ export function Header() {
   const [suggestions, setSuggestions] = useState<any[]>([])
   const searchRef = useRef<HTMLFormElement | null>(null)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const dispatch = useAppDispatch()
   const cartItems = useAppSelector((state) => state.cart.items)
   const cartItemsCount = useMemo(
@@ -42,6 +44,13 @@ export function Header() {
     [cartItems]
   )
   const { user, isAuthenticated, restored } = useAppSelector((state) => state.auth)
+  const { store } = useAppSelector((state) => state.store)
+
+  // Only use store data after mounting to prevent hydration mismatch
+  const storeName = mounted && store?.name ? store.name : SITE_CONFIG.name
+  const storePhone = mounted && store?.phone ? store.phone : CONTACT_INFO.phone
+  const storeEmail = mounted && store?.email ? store.email : CONTACT_INFO.email
+  const storeLogo = mounted ? store?.logo_url : undefined
   const router = useRouter()
   const pathname = usePathname() || '/'
   const searchParams = useSearchParams()
@@ -58,14 +67,14 @@ export function Header() {
     () => `/register?redirect=${encodeURIComponent(currentFullPath)}`,
     [currentFullPath]
   )
-  
+
   const displayName = useMemo(
-    () => user && (user.first_name && user.last_name 
-      ? `${user.first_name} ${user.last_name}` 
+    () => user && (user.first_name && user.last_name
+      ? `${user.first_name} ${user.last_name}`
       : (user.first_name || user.email || user.phone || '')),
     [user]
   )
-  
+
   const handleLogout = useCallback(async () => {
     try {
       await dispatch(logoutUser() as any)
@@ -75,6 +84,10 @@ export function Header() {
       console.error(err)
     }
   }, [dispatch, router])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const handleResize = () => {
@@ -98,7 +111,7 @@ export function Header() {
       setIsSearchOpen(false)
     }
   }, [searchQuery, router])
-  
+
   useEffect(() => {
     dispatch(fetchCart());
   }, [dispatch]);
@@ -147,26 +160,30 @@ export function Header() {
   }, [])
 
   return (
-    <header className="w-full bg-white shadow-sm">
+    <header className="w-full bg-white shadow-sm ">
       {/* Top bar */}
-      <div className="bg-gray-100 border-b">
+      <div className="bg-gray-100 border-b lg:px-[100px]">
         <div className="container mx-auto px-4">
           <div className="flex h-8 items-center justify-between text-xs text-gray-600">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-1">
                 <Phone className="h-3 w-3" />
-                <span>Hotline: {CONTACT_INFO.phone}</span>
+                <a href={`tel:${storePhone}`} className="hover:text-red-600 transition-colors">
+                  Hotline: {storePhone}
+                </a>
               </div>
               <div className="hidden md:flex items-center gap-1">
                 <Mail className="h-3 w-3" />
-                <span>Email: {CONTACT_INFO.email}</span>
+                <a href={`mailto:${storeEmail}`} className="hover:text-red-600 transition-colors">
+                  Email: {storeEmail}
+                </a>
               </div>
             </div>
             <div className="flex items-center gap-4">
               {restored === false ? null : isAuthenticated && user ? (
                 <div className="flex items-center gap-3">
-                  <Link 
-                    href="/account" 
+                  <Link
+                    href="/account"
                     className="flex items-center gap-2 text-sm hover:text-red-600 transition-colors group"
                   >
                     <UserCircle className="h-4 w-4 flex-shrink-0 group-hover:text-red-600 transition-colors" />
@@ -206,13 +223,28 @@ export function Header() {
       </div>
 
       {/* Main header */}
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 lg:px-[100px]">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-40 h-12 bg-red-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">{SITE_CONFIG.name}</span>
-            </div>
+          <Link href="/" className="flex items-center space-x-3">
+            {storeLogo ? (
+              <Image
+                src={storeLogo}
+                alt={storeName}
+                width={48}
+                height={48}
+                className="h-12 w-auto object-contain"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">
+                  {storeName.charAt(0)}
+                </span>
+              </div>
+            )}
+            <span className="text-xl font-bold text-gray-900 hidden sm:inline">
+              {storeName}
+            </span>
           </Link>
 
           {/* Search and Actions */}
@@ -286,7 +318,7 @@ export function Header() {
                   {cartItemsCount}
                 </Badge>
               )}
-            </Button> 
+            </Button>
           </div>
         </div>
 
@@ -311,9 +343,9 @@ export function Header() {
 
       {/* Red Navigation Bar */}
       <div className="bg-red-600 text-white">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 lg:px-[100px]">
           <div className="flex items-center h-12">
-            <div className="hidden lg:flex items-center space-x-8">
+            <div className="hidden lg:flex items-center">
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
@@ -343,11 +375,10 @@ export function Header() {
                           <NavigationMenuLink asChild>
                             <Link
                               href={item.href}
-                              className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                                isActive
-                                  ? '!bg-red-800 !text-white'
-                                  : '!text-white hover:!bg-red-700 hover:!text-white focus:!text-white'
-                              }`}
+                              className={`group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${isActive
+                                ? '!bg-red-800 !text-white'
+                                : '!text-white hover:!bg-red-700 hover:!text-white focus:!text-white'
+                                }`}
                             >
                               {item.name}
                             </Link>
@@ -382,25 +413,24 @@ export function Header() {
                             <div key={item.name}>
                               <Link
                                 href={item.href}
-                                className={`block rounded-lg px-3 py-2 text-base font-semibold leading-7 transition-colors ${
-                                  isActive
-                                    ? 'bg-red-50 text-red-600'
-                                    : 'text-gray-900 hover:bg-gray-50'
-                                }`}
+                                className={`block rounded-lg px-3 py-2 text-base font-semibold leading-7 transition-colors ${isActive
+                                  ? 'bg-red-50 text-red-600'
+                                  : 'text-gray-900 hover:bg-gray-50'
+                                  }`}
                                 onClick={() => setIsMobileNavOpen(false)}
                               >
                                 {item.name}
                               </Link>
-                            {item.name === "Tất cả sản phẩm" && (
-                              <div className="ml-4 space-y-1">
-                                <DynamicNavigation
-                                  className="space-y-1 overflow-y-auto max-h-[40vh]"
-                                  limit={100}
-                                  variant="mobile"
-                                  onItemClick={() => setIsMobileNavOpen(false)}
-                                />
-                              </div>
-                            )}
+                              {item.name === "Tất cả sản phẩm" && (
+                                <div className="ml-4 space-y-1">
+                                  <DynamicNavigation
+                                    className="space-y-1 overflow-y-auto max-h-[40vh]"
+                                    limit={100}
+                                    variant="mobile"
+                                    onItemClick={() => setIsMobileNavOpen(false)}
+                                  />
+                                </div>
+                              )}
                             </div>
                           )
                         })}
