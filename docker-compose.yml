@@ -13,6 +13,7 @@ services:
       - ${SERVICE_PORT}:${SERVICE_PORT}
     environment:
       - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     env_file:
       - .env
     restart: always
